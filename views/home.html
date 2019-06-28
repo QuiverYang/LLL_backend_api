@@ -1,0 +1,61 @@
+<html lang="en">
+<head>
+  <title>Bootstrap Example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  
+</head>
+<body>
+<!--nav-->
+  <nav class="navbar navbar-expand-sm bg-dark navbar-dark fixed-top">
+    <a class="navbar-brand" href="#">Logo</a>
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a class="nav-link" href="#">Link</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="storeAdd.html">Link</a>
+      </li>
+    </ul>
+  </nav>
+
+<!--content-->
+  <br>
+  <br>
+  <br>
+  <div><p>second row</p></div>
+  <div id="app">
+    {{ message }}
+    <p>Can you see the GHOST-> <span v-if="seen">XD</span></p>
+    <ol>
+      <li v-for = "todo in todos">
+        {{todo.text}}
+      </li>
+    </ol>
+    <button v-on:click = "reverseMsg">reverse Message</button>
+    <br>
+    <button v-on:click = "testMsg">test</button>
+    <br>
+    <input v-model = "message">
+    <br>
+    <todo-item
+      v-for = "item in groceryList"
+      v-bind:todo = "item"
+      v-bind:key = "item.id">
+    </todo-item>
+
+  </div>
+  <form action="results.html" method="GET">
+    <input type="text" placeholder="store name" name="storeName">
+    <input type="submit">
+</form>
+
+  <script src="home.js"></script>
+
+</body>
+</html>
