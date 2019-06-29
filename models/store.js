@@ -14,10 +14,12 @@ storeSchema = new Schema({
         close:{type:String, default:'暫未提供'}
     },
     email:{type:String, default:'暫未提供'},
-    currentExhibit: {type:String, default:''}
+    currentExhibit: {type:String, default:''},
 })
 
-
+storeSchema.query.byName = function(name){
+    return this.where({name:name});
+}
 
 storeSchema.statics.findOneByName = function(StoreName){
     return this.findOne({name:StoreName});

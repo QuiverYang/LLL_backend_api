@@ -130,10 +130,16 @@ const getPassword = async (req,res)=>{
     }
 }
 
+const clearStoreExhibit = async (req,res)=>{
+    await Store.updateMany({},{$set:{currentExhibit:''}});
+    res.send('clear stores exhibition info');
+}
+
 module.exports = {
     create,
     getStore,
     updateStore,
     getAllStores,
-    getPassword
+    getPassword,
+    clearStoreExhibit
 }
