@@ -30,5 +30,8 @@ storeSchema.statics.findAllStores = function(){
 storeSchema.statics.findOneByEmail = function(email){
     return this.findOne({email:email});
 }
+storeSchema.statics.findByCurrentExhibition = function(exhibitionName){
+    return this.find({currentExhibit:exhibitionName});
+}
 
 module.exports = mongoose.model('Store',storeSchema);
