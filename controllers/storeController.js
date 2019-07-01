@@ -8,8 +8,6 @@ const create = async (req, res)=>{
     let fix = req.body.fixphone;
     let info = req.body.info;
     let address = req.body.address;
-    let open = req.body.open;
-    let close = req.body.close;
     let email = req.body.email
 
     // let user2 = await User.findByName(req.body.firstName,req.body.lastName);
@@ -24,8 +22,6 @@ const create = async (req, res)=>{
         fix === undefined||
         info === undefined||
         address === undefined||
-        open === undefined||
-        close === undefined||
         email === undefined){
             res.json({status:-1,msg:"post empty store information"});
             return;
@@ -39,10 +35,6 @@ const create = async (req, res)=>{
         },
         info: info,
         address:address,
-        openingTime:{
-            open:open,
-            close:close
-        },
         email:email
     });
 
@@ -91,8 +83,6 @@ const updateStore = async (req,res)=>{
     let fix = Checker.isfilled(req.body.fixphone) ? store.phone.fixphone:req.body.fixphone;
     let info = Checker.isfilled(req.body.info) ? store.info:req.body.info;
     let address = Checker.isfilled(req.body.address)? store.address:req.body.address;
-    let open = Checker.isfilled(req.body.open) ? store.openingTime.open:req.body.open;
-    let close = Checker.isfilled(req.body.close) ? store.openingTime.close:req.body.close;
     let email = Checker.isfilled(req.body.email) ? store.eamil:req.body.email;
 
     
@@ -109,10 +99,6 @@ const updateStore = async (req,res)=>{
         },
         info: info,
         address:address,
-        openingTime:{
-            open:open,
-            close:close
-        },
         email:email
      })
     store = await Store.findOneByName(storeName);

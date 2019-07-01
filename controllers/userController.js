@@ -9,14 +9,21 @@ const create =  async (req, res, next)=>{
     let birth = req.body.birthday;
     let phone = req.body.phone;
     let gender = req.body.gender;
+    let email = req.body.email;
 
     if(password === undefined||
         lastName === undefined||
         firstName === undefined||
         birth === undefined||
         phone === undefined||
-        gender === undefined){
+        gender === undefined||
+        email === undefined){
         res.json({status:1, msg:'Bad Request'});
+        return;
+    }
+    let tempUser = await User.findOneByEmail(email);
+    if(tempUser != null){
+        res.json({status:400,msg:'email has been registered'});
         return;
     }
     let user = new User({
@@ -24,7 +31,8 @@ const create =  async (req, res, next)=>{
             firstName: firstName,
             lastName:lastName
         },
-        id : await User.countDocuments()+1,
+        email:email,
+        // id : await User.countDocuments()+1,
         birth: birth,
         gender: gender,
         phone: phone,
@@ -40,7 +48,7 @@ const test = (req,res)=>{
 
 //異步處理的寫法
 const getUser = async (req,res,next)=>{
-    let users = await User.findByName(req.query.firstName, req.query.lastName);
+    let users = await User.findOneByName(req.query.firstName, req.query.lastName);
     res.json({status:-1,msg:{users:users}});
 }
 
@@ -57,7 +65,7 @@ const getUser2 = async (req, res, next) => {
 }
 
 const getSameGender = async (req, res)=>{
-    let user = await User.findByName(req.query.firstName, req.query.lastName);//因為findByName是用findOne()方法找到的 所以會回一個
+    let user = await User.findOneByName(req.query.firstName, req.query.lastName);//因為findByName是用findOne()方法找到的 所以會回一個
     //沒有找到的話可能為null
     //如果是[]的話 可能為undefined
     if(user === null){
@@ -68,10 +76,26 @@ const getSameGender = async (req, res)=>{
     res.json({status:-1,msg:{users:result}});
 }
 
+const login = async (req,res)=>{
+    const email = req.body.email;
+    const password = req.body.password;
+    if(email===undefined || password === undefined){
+        res.json({status:400,msg:'undefined email or password'});
+        return;
+    }
+    let user = await User.findOneByEmail(email);
+    if(user.password === password){
+        res.json({status:200,msg:'login success'})
+    }else{
+        res.json({status:400,msg:'wrong password'})
+    }
+}
+
 module.exports = {
     create,
     getUser,
     getUser2,
     getSameGender,
-    test
+    test,
+    login
 }

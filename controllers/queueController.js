@@ -4,6 +4,7 @@ const User = require('../models/user');
 const Store = require('../models/store');
 
 //先設定好店家的currentExhibition 然後用此參數去尋找這次有參加該展的廠商
+//創造出許多店家
 const create = async (req,res)=>{
     const currentExhibit = req.body.currentExhibit;
     if(currentExhibit === undefined){

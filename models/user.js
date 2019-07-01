@@ -7,14 +7,14 @@ userSchema = new Schema({
         firstName: String,
         lastName:String
     },
-    id : Number,
+    email : String,
     birth: String,
     gender: String,
     phone: String,
     passsword: String
 });
 
-userSchema.statics.findByName = function(firstName, lastName) {
+userSchema.statics.findOneByName = function(firstName, lastName) {
     return this.findOne({name:{firstName:firstName,lastName:lastName}});
 }
 userSchema.methods.findSameGender = function(){
@@ -23,6 +23,9 @@ userSchema.methods.findSameGender = function(){
 }
 userSchema.query.byName = function(firstName, lastName){
     return this.where({name:{firstName:firstName,lastName:lastName}});
+}
+userSchema.statics.findOneByEmail = function(email){
+    return this.findOne({email:email});
 }
 
 

@@ -36,7 +36,7 @@ const create =  async (req, res, next)=>{
     
 }
 const getAllUsers = async (req,res,next)=>{
-    let users = User.find();
+    let users = await User.find();
     res.json({status:-1,msg:{users:users}});
 }
 const test = (req,res)=>{
