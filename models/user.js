@@ -11,7 +11,7 @@ userSchema = new Schema({
     birth: String,
     gender: String,
     phone: String,
-    passsword: String
+    password: String
 });
 
 userSchema.statics.findOneByName = function(firstName, lastName) {
