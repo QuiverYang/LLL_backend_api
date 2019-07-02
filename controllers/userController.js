@@ -1,6 +1,4 @@
 const User = require('../models/user');  //拿到mongoose.model('User',userSchema)
-const id = 1;
-var idGen = id;
 
 const create =  async (req, res, next)=>{
     let password = req.body.password;
@@ -18,12 +16,12 @@ const create =  async (req, res, next)=>{
         phone === undefined||
         gender === undefined||
         email === undefined){
-        res.json({status:1, msg:'Bad Request'});
+        res.json({status:400, msg:'Bad Request'});
         return;
     }
     let tempUser = await User.findOneByEmail(email);
     if(tempUser != null){
-        res.json({status:400,msg:'email has been registered'});
+        res.json({status:401,msg:'email has been registered'});
         return;
     }
     let user = new User({
@@ -38,7 +36,7 @@ const create =  async (req, res, next)=>{
         phone: phone,
         password:password
     });
-    user.save().then(() => res.json({status:1, msg: user}));
+    user.save().then(() => res.json({status:200, msg: user}));
 }
 
 
@@ -59,22 +57,22 @@ const getUser = async (req,res,next)=>{
 //     })
 // }
 
-const getUser2 = async (req, res, next) => {
-    let users = await User.find().byName(req.body.first, req.body.last);
-    res.json({status:-1,msg:{users:users}});
-}
+// const getUser2 = async (req, res, next) => {
+//     let users = await User.find().byName(req.body.first, req.body.last);
+//     res.json({status:-1,msg:{users:users}});
+// }
 
-const getSameGender = async (req, res)=>{
-    let user = await User.findOneByName(req.query.firstName, req.query.lastName);//因為findByName是用findOne()方法找到的 所以會回一個
-    //沒有找到的話可能為null
-    //如果是[]的話 可能為undefined
-    if(user === null){
-        res.send("user doesn't exsist!!");
-        return;
-    }
-    let result = await user.findSameGender();
-    res.json({status:-1,msg:{users:result}});
-}
+// const getSameGender = async (req, res)=>{
+//     let user = await User.findOneByName(req.query.firstName, req.query.lastName);//因為findByName是用findOne()方法找到的 所以會回一個
+//     //沒有找到的話可能為null
+//     //如果是[]的話 可能為undefined
+//     if(user === null){
+//         res.send("user doesn't exsist!!");
+//         return;
+//     }
+//     let result = await user.findSameGender();
+//     res.json({status:-1,msg:{users:result}});
+// }
 
 const login = async (req,res)=>{
     const email = req.body.email;
@@ -84,18 +82,22 @@ const login = async (req,res)=>{
         return;
     }
     let user = await User.findOneByEmail(email);
+    if (user == null){
+        res.json({status:401,msg:email+' does not exsist'});
+        return 
+    }
     if(user.password === password){
         res.json({status:200,msg:'login success'})
     }else{
-        res.json({status:400,msg:'wrong password'})
+        res.json({status:401,msg:'wrong password'})
     }
 }
 
 module.exports = {
     create,
     getUser,
-    getUser2,
-    getSameGender,
+    // getUser2,
+    // getSameGender,
     test,
     login
 }
