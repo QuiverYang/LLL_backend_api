@@ -11,7 +11,8 @@ userSchema = new Schema({
     birth: String,
     gender: String,
     phone: String,
-    passsword: String
+    password: String,
+    auth: Boolean
 });
 
 userSchema.statics.findOneByName = function(firstName, lastName) {
@@ -26,6 +27,9 @@ userSchema.query.byName = function(firstName, lastName){
 }
 userSchema.statics.findOneByEmail = function(email){
     return this.findOne({email:email});
+}
+userSchema.query.updateAuth = function(email){
+    return this.updateOne({email:email},{auth: true});
 }
 
 

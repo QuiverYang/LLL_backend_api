@@ -1,4 +1,6 @@
 const User = require('../models/user');  //拿到mongoose.model('User',userSchema)
+const jwt = require('jsonwebtoken');
+const config = require('../config');
 
 const create =  async (req, res, next)=>{
     let password = req.body.password;
@@ -8,6 +10,7 @@ const create =  async (req, res, next)=>{
     let phone = req.body.phone;
     let gender = req.body.gender;
     let email = req.body.email;
+    let auth = false;
 
     if(password === undefined||
         lastName === undefined||
@@ -34,9 +37,15 @@ const create =  async (req, res, next)=>{
         birth: birth,
         gender: gender,
         phone: phone,
-        password:password
+        password:password,
+        auth:auth
     });
-    user.save().then(() => res.json({status:200, msg: user}));
+    user.save().then(() =>{
+        // let token = jwt.sign({email:email},config.jwtSalt,{
+        //     expiresIn: 60*60*24//24hr
+        // });
+        res.json({status:200, msg:'create success'})
+    } );
 }
 
 
@@ -86,10 +95,17 @@ const login = async (req,res)=>{
         res.json({status:401,msg:email+' does not exsist'});
         return 
     }
+    if(user.auth == false){
+        res.json({status:402,msg:'not authenticate'})
+        return;
+    }
     if(user.password === password){
-        res.json({status:200,msg:'login success'})
+        let token = jwt.sign({email:email},config.jwtSalt,{
+            expiresIn: 60*60*24//24hr
+        });
+        res.json({status:200,msg:token,user:user})
     }else{
-        res.json({status:401,msg:'wrong password'})
+        res.json({status:403,msg:'wrong password'})
     }
 }
 
