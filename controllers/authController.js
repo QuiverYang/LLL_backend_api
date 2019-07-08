@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const config = require('../config');
+const User = require('../models/user');
 const Admin = require('../models/admin');
 
 const getToken = (req,res)=>{
@@ -29,7 +30,6 @@ const getToken = (req,res)=>{
         return;
     })
 }
-
 const checkToken = (req,res,next)=>{
     var token = req.headers['x-access-token'];
     if(token){
@@ -44,6 +44,24 @@ const checkToken = (req,res,next)=>{
         })
     }else{
         res.json({status:400,msg:'empty token in headers'});
+        return;
+    }
+}
+const checkAuth = async (req,res,next) => {
+    var token = req.query.token;
+    if(token){
+        jwt.verify(token,config.jwtSalt, async (err,decoded) => {
+            if(err){
+                res.json(err,null,res);
+                return;
+            }else{
+                await User.update().updateAuth(decoded.email);
+                res.json({status:200,msg:'Success checkAuth'})
+            }
+        });
+        
+    }else{
+        res.json({status:400,msg:'Fail checkAuth'});
         return;
     }
 }
@@ -65,9 +83,9 @@ const checkTokenForAdmin = (req,res,next)=>{
     }
 }
 
-
 module.exports = {
     getToken,
     checkToken,
+    checkAuth,
     checkTokenForAdmin
 }

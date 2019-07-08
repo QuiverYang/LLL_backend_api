@@ -4,6 +4,11 @@ const userController = require('../controllers/userController');
 const storeController = require('../controllers/storeController');
 const authController = require('../controllers/authController');
 router.post('/create',userController.create);//leadline/user/create
+<<<<<<< HEAD
+//router.get('/getSameGender', userController.getSameGender);
+router.get('/getStore',storeController.getStore);
+=======
+>>>>>>> master
 router.post('/login',userController.login)//leadline/user/login
 // router.get('/getSameGender', userController.getSameGender);
 router.use(authController.checkToken);

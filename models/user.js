@@ -7,11 +7,20 @@ userSchema = new Schema({
         firstName: {type:String, default:'暫未提供'},
         lastName:{type:String, default:'暫未提供'},
     },
+<<<<<<< HEAD
+    email : String,
+    birth: String,
+    gender: String,
+    phone: String,
+    password: String,
+    auth: Boolean
+=======
     email : {type:String, default:'暫未提供'},
     birthday: {type:String, default:'暫未提供'},
     gender: {type:String, default:'暫未提供'},
     phone: {type:String, default:'暫未提供'},
     password: {type:String, default:'暫未提供'},
+>>>>>>> master
 });
 
 userSchema.statics.findOneByName = function(firstName, lastName) {
@@ -26,6 +35,9 @@ userSchema.query.byName = function(firstName, lastName){
 }
 userSchema.statics.findOneByEmail = function(email){
     return this.findOne({email:email});
+}
+userSchema.query.updateAuth = function(email){
+    return this.updateOne({email:email},{auth: true});
 }
 
 
