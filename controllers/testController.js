@@ -8,7 +8,21 @@ const a = (req,res)=>{
     let bb = queue.size();
     res.send(bb+'');
 }
-
+const b =(req,res)=>{
+    let name = req.body.name;
+    let password = req.body.password;
+    res.json({status:1, msg:{name:name,password:'1234'}});
+    return;
+}
+const c =()=>{
+    
+}
+const d =()=>{
+    
+}
 module.exports = {
     a,
+    b,
+    c,
+    d
 }

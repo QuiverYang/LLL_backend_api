@@ -4,14 +4,14 @@ const Schema = mongoose.Schema;
 
 userSchema = new Schema({
     name : {
-        firstName: String,
-        lastName:String
+        firstName: {type:String, default:'暫未提供'},
+        lastName:{type:String, default:'暫未提供'},
     },
-    email : String,
-    birth: String,
-    gender: String,
-    phone: String,
-    password: String
+    email : {type:String, default:'暫未提供'},
+    birthday: {type:String, default:'暫未提供'},
+    gender: {type:String, default:'暫未提供'},
+    phone: {type:String, default:'暫未提供'},
+    password: {type:String, default:'暫未提供'},
 });
 
 userSchema.statics.findOneByName = function(firstName, lastName) {
