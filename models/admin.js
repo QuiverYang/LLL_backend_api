@@ -7,7 +7,7 @@ adminSchema = new Schema({
     email:String,
     company:String,
     account: String,
-    passsword: String
+    password: String
 });
 
 adminSchema.statics.findByAccount = function(account) {

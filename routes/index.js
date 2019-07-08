@@ -6,9 +6,16 @@ const userRouter = require('./userRoutes');
 const storeRouter = require('./storeRoute');
 const adminRouter = require('./adminRoute');
 const testRouter = require('./testRoute');
+<<<<<<< HEAD
 const authRoute = require('./authRoute.js');
 const emailRoute = require('./emailRoute');
 const authController = require('../controllers/authController');
+=======
+const authRouter = require('./authRoute');
+
+
+router.use('/auth',authRouter);//leadline/auth
+>>>>>>> master
 
 router.use('/user', userRouter);//leadline/user
 router.use('/store',storeRouter);//leadline/store

@@ -4,24 +4,24 @@ const config = require('../config');
 
 const create =  async (req, res, next)=>{
     let password = req.body.password;
-    let lastName = req.body.last;
-    let firstName = req.body.first;
-    let birth = req.body.birthday;
+    let lastName = req.body.lastName;
+    let firstName = req.body.firstName;
+    let birthday = req.body.birthday;
     let phone = req.body.phone;
     let gender = req.body.gender;
     let email = req.body.email;
     let auth = false;
 
-    if(password === undefined||
-        lastName === undefined||
-        firstName === undefined||
-        birth === undefined||
-        phone === undefined||
-        gender === undefined||
-        email === undefined){
-        res.json({status:400, msg:'Bad Request'});
-        return;
-    }
+    // if(password === undefined||
+    //     lastName === undefined||
+    //     firstName === undefined||
+    //     birthday === undefined||
+    //     phone === undefined||
+    //     gender === undefined||
+    //     email === undefined){
+    //     res.json({status:400, msg:'Bad Request'});
+    //     return;
+    // }
     let tempUser = await User.findOneByEmail(email);
     if(tempUser != null){
         res.json({status:401,msg:'email has been registered'});
@@ -34,7 +34,7 @@ const create =  async (req, res, next)=>{
         },
         email:email,
         // id : await User.countDocuments()+1,
-        birth: birth,
+        birthday: birthday,
         gender: gender,
         phone: phone,
         password:password,
@@ -108,12 +108,47 @@ const login = async (req,res)=>{
         res.json({status:403,msg:'wrong password'})
     }
 }
+const update = (req,res)=>{
+    const email = req.body.email;
+    User.updateOne({email:email},{$set:{
+        name : {
+            firstName: req.body.firstName,
+            lastName:req.body.lastName
+        },
+        email:req.body.email,
+        birthday: req.body.birthday,
+        gender: req.body.gender,
+        phone: req.body.phone,
+        password:req.body.password
+    }},function(error, user){
+        if(error){
+            console.log('updateStore error:'+error)
+        }else{
+            if(user){
+                res.json({status:200,msg:user});
+            }
+        }
+    })
+}
+const remove = (req,res)=>{
+    let email = req.body.email;
+    console.log('req.params: ')
+    console.log(req.body);
+    User.deleteOne({email:email},function(err,result){
+        if(err){
+            console.log(err);
+        }else{
+            // console.log(result);
+            res.json({status:200,msg:result});
+        }
+    })
+}
 
 module.exports = {
     create,
     getUser,
-    // getUser2,
-    // getSameGender,
     test,
-    login
+    login,
+    update,
+    remove,
 }

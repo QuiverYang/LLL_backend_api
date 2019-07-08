@@ -1,6 +1,7 @@
 const config = {
     port : 3000,
-    mongodb : "mongodb+srv://quiver:quiver@quiver-ncvva.mongodb.net/api_practice?retryWrites=true&w=majority"
+    mongodb : "mongodb+srv://quiver:quiver@quiver-ncvva.mongodb.net/api_practice?retryWrites=true&w=majority",
+    jwtSalt:"QUIVER"
 }
 // module.exports = {
 //     config

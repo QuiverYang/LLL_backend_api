@@ -4,10 +4,7 @@ const Schema = mongoose.Schema;
 storeSchema = new Schema({
     name: {type:String, default:'未命名'},
     password:{type:String,default:'0000'},
-    phone: {
-        cellphone: {type:String, default:'暫未提供'},
-        fixphone:{type:String, default:'暫未提供'}
-    },
+    phone: {type:String, default:'暫未提供'},
     info: {type:String, default:'暫未提供'},
     address:{type:String, default:'暫未提供'},
     email:{type:String, default:'暫未提供'},
