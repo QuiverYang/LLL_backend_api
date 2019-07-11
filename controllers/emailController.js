@@ -3,27 +3,60 @@ const config = require('../config');
 var nodemailer = require('nodemailer');
 const User = require('../models/user');
 
+const test = (req,res)=>{
+    res.send('email test route')
+}
+const send2 = function(toEmail,emailSubject, emailContent){
+    var transporter = nodemailer.createTransport({
+        service:'Gmail',
+        auth:{
+            user:'ccc72077@gmail.com',
+            pass:'ss72077!'
+        }
+    });
+    
+    var options = {
+        from: 'ccc72077@gmail.com',
+        to:toEmail,
+        subject: emailSubject,
+        html: emailContent,
+        attachments: [ {
+            filename: '',
+            path: ''
+        }]
+    }
+    
+    transporter.sendMail(options,function(error,info){
+        if(error){
+            console.log(error);
+        }else{
+            console.log('訊息發送:'+info.response);
+        }
+    })
+}
+
 const send = (req,res,next) =>{
     let email = req.body.email;
+    console.log('register email: '+ email)
     var token = jwt.sign({email:email},config.jwtSalt,{
         expiresIn: 60*60*24//24hr
     });
     var transporter = nodemailer.createTransport({
         service:'Gmail',
         auth:{
-            user:'c72077@gmail.com',
-            pass:'720770350240'
+            user:'ccc72077@gmail.com',
+            pass:'ss72077!'
         }
     });
     
     var options = {
-        from: 'c72077@gmail.com',
-        to:'s72077@hotmail.com',
+        from: 'ccc72077@gmail.com',
+        to:email,
         subject: '這是 node.js 發送的測試信件',
-        html: '<h2>請點擊連結啟動帳號</h2> <p><a href="http://35.189.169.87:3000/leadline/auth/checkAuth?token='+token+'" title="LeadLongLine">點擊這裡</a> 之後請回app重新登入</p>',
+        html: '<h2>請點擊連結啟動帳號</h2> <p><a href="http://34.80.102.113:3000/leadline/auth/checkAuth?token='+token+'" title="LeadLongLine">點擊這裡</a> 之後請回app重新登入</p>',
         attachments: [ {
-            filename: 'ps.jpg',
-            path: '/home/c72077/server2/image/ps.jpg'
+            filename: '',
+            path: ''
         }]
     }
     
@@ -48,19 +81,19 @@ const sendPassword = async(req,res,next) =>{
     var transporter = nodemailer.createTransport({
         service:'Gmail',
         auth:{
-            user:'c72077@gmail.com',
+            user:'ccc72077@gmail.com',
             pass:'720770350240'
         }
     });
     
     var options = {
-        from: 'c72077@gmail.com',
+        from: 'ccc72077@gmail.com',
         to:'s72077@hotmail.com',
         subject: '這是 node.js 發送的測試信件',
         html: '<h2>帳號:'+email+'</h2><h3>-------------------------------------------------</h3><p>密碼: '+user.password+' </p>',
         attachments: [ {
-            filename: 'ps.jpg',
-            path: '/home/c72077/server2/image/ps.jpg'
+            filename: '',
+            path: ''
         }]
     }
     
@@ -76,5 +109,7 @@ const sendPassword = async(req,res,next) =>{
 }
 module.exports = {
     send,
-    sendPassword
+    sendPassword,
+    test,
+    send2
 }

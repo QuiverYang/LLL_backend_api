@@ -8,7 +8,6 @@ router.delete('/stores',queueController.deleteAllQueue);//leadline/admin/queue/s
 router.put('/addVisitor',queueController.addVisitor);//leadline/admin/queue/addVisitor
 router.put('/resetCurrentExhibit',queueController.resetCurrentExhibit);//leadline/admin/queue/resetCurrentExhibit
 router.put('/setVisitorToEmpty',queueController.setVisitorToEmpty);//leadline/admin/queue/setVisitorToEmpty
-router.get('/getAllQueue',queueController.getAllQueue);//leadline/admin/queue/getAllQueue
 
 //在post裡面的key值為name 可尋找到店家 店家可為多個
 //key值currentExhibit 可更改店家的參展名稱

@@ -9,6 +9,9 @@ storeSchema = new Schema({
     address:{type:String, default:'暫未提供'},
     email:{type:String, default:'暫未提供'},
     currentExhibit: {type:String, default:''},
+    boothNo:{type:String, default:'暫未提供'},
+    imgURL:{type:String, default:'暫未提供'},
+    queue: {type: Schema.Types.ObjectId, ref: 'Queue'}
 })
 
 storeSchema.query.byName = function(name){

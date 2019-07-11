@@ -14,8 +14,8 @@ const b =(req,res)=>{
     res.json({status:1, msg:{name:name,password:'1234'}});
     return;
 }
-const c =()=>{
-    
+const c =(req,res)=>{
+    res.send('test c')
 }
 const d =()=>{
     

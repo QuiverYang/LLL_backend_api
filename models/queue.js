@@ -4,9 +4,8 @@ const Schema = mongoose.Schema;
 var queue = new queueWay();
 
 queueSchema = new Schema({
-    exhibitionName:{type: String,default:''},
-    storeName : String,
-    ticket : Number,
+    current : {type: Number, default:0},
+    total: {type:Number, default:0},
     visitor: [{type: Schema.Types.ObjectId, ref: 'User',default:[]}]
 });
 

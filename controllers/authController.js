@@ -24,7 +24,7 @@ const getToken = (req,res)=>{
             res.json({status:401,msg:'invalid user'});
             return;
         }
-        var token = jwt.sign({adminId:admin._id},config.jwtSalt,{expiresIn:60*60*24});
+        var token = jwt.sign({adminId:admin._id},config.jwtSalt,{expiresIn:60*60*24*30});
         res.json({status:200,token:token});
         
         return;
@@ -32,6 +32,7 @@ const getToken = (req,res)=>{
 }
 const checkToken = (req,res,next)=>{
     var token = req.headers['x-access-token'];
+    console.log('!')
     if(token){
         jwt.verify(token,config.jwtSalt,(err,decoded)=>{
             if(err){

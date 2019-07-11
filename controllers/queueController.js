@@ -18,7 +18,8 @@ const create = async (req,res)=>{
         await Queue.create({
             exhibitionName:currentExhibit,
             storeName:stores[i].name,
-            ticket : 1,
+            current : 0,
+            total : 0,
             visitor:[]
         });
     }
@@ -57,36 +58,41 @@ const setStoresExihibit= async (req,res)=>{
     res.send('currentExhibit of stores has been changed to ' + currentExhibit);
 }
 
-const getAllQueue = async(req,res)=>{
-    const queues = await Queue.find().populate('visitor');
-    res.json({status:200,msg:queues})
-}
 
 const addVisitor = async(req,res)=>{
-    const user_id = req.body._id;
-    const storeName = req.body.storeName;
-    if(storeName === undefined|| user_id === undefined){
+    const userEmail = req.body.userEmail;
+    const storeEmail = req.body.storeEmail;
+    if(userEmail === undefined|| storeEmail === undefined){
         res.json({status:400, msg:'input infomation missing'});
         return;
     }
-    const exhibitor = await Queue.findOneByStoreName(storeName);
-    if(exhibitor == null){
+    const store = await Store.findOne({email:storeEmail});
+    if(store == null){
         //此處應修改為新建立一個user給他然後加入 depends on infomation in req.body
-        res.json({status:400,msg:'worng storeName'});
+        res.json({status:400,msg:'invalid store Email'});
         return;
     }
-    console.log(exhibitor);
-
-    let user = await User.findById(user_id);
-    console.log(user);
+    const exhibitor = await Queue.findOne({storeName:store.name});
+    if(exhibitor == null){
+        res.json({status:400,msg:'invalid exhibitor'});
+        return;
+    }
+    let user = await User.findOneByEmail(userEmail);
     if(user == null){
         //此處應修改為新建立一個user給他然後加入 depends on infomation in req.body
-        res.json({status:400,msg:'can not add visitor who doesnt exsist'});
+        res.json({status:400,msg:'invalid user email'});
         return;
     }
-    await Queue.updateOne({storeName:storeName},{$push:{ visitor: user }});
+    console.log(exhibitor.storeName);
+    Queue.updateOne({storeName:exhibitor.storeName},{$push:{ visitor: user }, $set:{total:Number(exhibitor.total)+1} },function(error, result){
+        if(error){
+            console.log(error)
+        }else{
+            res.json({status:200,msg:result});
+        }
+    });
 
-    res.json({status:-1,msg:'addVisitor'});
+    
 }
 const test = (req,res)=>{
     res.send('queue test');
@@ -105,5 +111,4 @@ module.exports = {
     deleteAllQueue,
     setStoresExihibit,
     resetCurrentExhibit,
-    getAllQueue
 }

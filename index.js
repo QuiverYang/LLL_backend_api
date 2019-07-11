@@ -10,6 +10,7 @@ app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, x-access-token, Accept");
     next()
 })
+
 app.use(bodyParser.json()); //允許json格式
 app.use(bodyParser.urlencoded({extended:false})); //允許x-www.form.urlencoded格式
 app.use('/leadline',router);
