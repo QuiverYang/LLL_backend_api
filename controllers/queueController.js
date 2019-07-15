@@ -59,6 +59,7 @@ const setStoresExihibit= async (req,res)=>{
 }
 
 
+
 const addVisitor = async(req,res)=>{
     const userEmail = req.body.userEmail;
     const storeEmail = req.body.storeEmail;
@@ -88,6 +89,7 @@ const addVisitor = async(req,res)=>{
         if(error){
             console.log(error)
         }else{
+            // userController.addStore(userEmail);
             res.json({status:200,msg:result});
         }
     });

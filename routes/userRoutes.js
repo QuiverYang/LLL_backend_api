@@ -6,10 +6,12 @@ const authController = require('../controllers/authController');
 router.post('/create',userController.create);//leadline/user/create
 router.get('/getStore',storeController.getStore);
 router.post('/login',userController.login)//leadline/user/login
-router.get('/getAllQueue',userController.getAllQueue)//leadlin/user/getAllQueue
+router.post('/getAllQueue',userController.getAllQueue)//leadlin/user/getAllQueue
 router.put('/update',userController.update);
 router.get('/getStore',storeController.getStore);
 router.get('/get', userController.getUser);//leadline/user/get
 router.delete('/remove',userController.remove);//leadlin/user/remove
+router.post('/addStore',userController.addStore);//leadlin/user/addStore
+router.post('/getLineByEmail',userController.getLineByEmail);//leadlin/user/getUserByEmail
 
 module.exports = router;

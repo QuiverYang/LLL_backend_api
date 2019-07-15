@@ -50,6 +50,31 @@ const getAllStores = async function (req,res){
     res.json({status:200, msg:stores});
 }
 
+const searchStores = async function (req,res){
+    let key = req.body.key;
+    let currentExhibit = req.body.currentExhibit;
+    let storesInfo = [];
+    const stores = await Store.findByCurrentExhibition(currentExhibit).populate('queue');
+    stores.forEach(function(store){
+        if(store.name.includes(key)){
+            storesInfo.push({
+                name:store.name,
+                phone:store.phone,
+                info:store.info,
+                address:store.address,
+                email:store.email,
+                currentExhibit:store.currentExhibit,
+                boothNo:store.boothNo,
+                imgURL:store.imgURL,
+                current:store.queue.current,
+                total:store.queue.total
+            })
+        }  
+        
+    })
+    res.json({status:200, msg:storesInfo});
+}
+
 const updateStore = async (req,res)=>{
     let email = req.body.email;
     let store = await Store.findOneByEmail(email);
@@ -120,5 +145,6 @@ module.exports = {
     updateStore,
     getAllStores,
     getPassword,
-    clearStoreExhibit
+    clearStoreExhibit,
+    searchStores
 }

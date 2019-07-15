@@ -12,7 +12,8 @@ userSchema = new Schema({
     gender: {type:String, default:'暫未提供'},
     phone: {type:String, default:'暫未提供'},
     password: {type:String, default:'暫未提供'},
-    auth: {type:Boolean, default:false}
+    auth: {type:Boolean, default:false},
+    line: [{type: Schema.Types.ObjectId, ref: 'UserQueue',default:[]}]
 });
 
 userSchema.statics.findOneByName = function(firstName, lastName) {
