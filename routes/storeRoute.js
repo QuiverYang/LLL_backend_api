@@ -11,4 +11,6 @@ router.get('/getAllStores',storeController.getAllStores);
 router.put('/clearStoreExhibit',storeController.clearStoreExhibit);
 router.post('/searchStores',storeController.searchStores);
 
+router.delete('/remove',storeController.remove);
+router.get('/getStoreSchema',storeController.getStoreSchema);
 module.exports = router;
