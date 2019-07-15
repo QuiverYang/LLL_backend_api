@@ -1,5 +1,7 @@
 const QueueWay = require('../utils/queueWay');
 const queue = new QueueWay();
+const Store = require('../models/store');
+var StoreSchema = require('mongoose').model('Store').schema;
 
 const a = (req,res)=>{
     queue.enqueue('test1');
@@ -17,8 +19,9 @@ const b =(req,res)=>{
 const c =(req,res)=>{
     res.send('test c')
 }
-const d =()=>{
-    
+const d = async (req,res)=>{
+    console.log(Object.keys(StoreSchema.obj));
+    res.send(Object.keys(StoreSchema.obj));
 }
 module.exports = {
     a,

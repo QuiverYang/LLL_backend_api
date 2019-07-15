@@ -9,5 +9,6 @@ router.put('/update',storeController.updateStore);
 router.post('/getStore',storeController.getStore);
 router.get('/getAllStores',storeController.getAllStores);
 router.put('/clearStoreExhibit',storeController.clearStoreExhibit);
-
+router.delete('/remove',storeController.remove);
+router.get('/getStoreSchema',storeController.getStoreSchema);
 module.exports = router;

@@ -3,6 +3,8 @@ const Checker = require('../utils/checker');
 const User = require('../models/user')
 const Queue = require('../models/queue');
 const emailController = require('../controllers/emailController');
+const StoreSchema = require('mongoose').model('Store').schema;
+
 
 const create = async (req, res)=>{
     let name = req.body.name;
@@ -52,6 +54,8 @@ const getAllStores = async function (req,res){
 
 const updateStore = async (req,res)=>{
     let email = req.body.email;
+    let postKeyValue = req.body.postKeyValue;
+    let input = req.body.input;
     let store = await Store.findOneByEmail(email);
     if(store === null){
         res.json({status:1, msg:'店家不存在'});
@@ -66,22 +70,13 @@ const updateStore = async (req,res)=>{
     let newPassword = Checker.isfilled(req.body.password)? store.password:req.body.password;
     let boothNo = Checker.isfilled(req.body.boothNo) ? store.boothNo:req.body.boothNo;
     let imgURL = Checker.isfilled(req.body.imgURL) ? store.imgURL:req.body.imgURL;
-
     
     //全部更新updateMany.({}空格代表全部條件都選,{$set:{object}}要替換的內容)  加了$set 代表只替換相對的資訊 原本其他資訊保留不刪除
     // await Store.updateOne({name:req.body.storeName}, { $set: 
     //     { phone: {cellphone:cell,fixphone:fix},email:email }
     //  });
-    Store.updateOne({email:req.body.email},{
-        name: newName,
-        phone: newPhone,
-        info: newInfo,
-        address:newAddress,
-        email:newEmail,
-        currentExhibit:newCurrentExhibit,
-        password:newPassword,
-        boothNo :boothNo,
-        imgURL:imgURL
+    Store.updateOne({email:email},{
+        [postKeyValue]:input
      },function(error, store2){
         if(error){
             console.log('updateStore error:'+error)
@@ -114,11 +109,32 @@ const clearStoreExhibit = async (req,res)=>{
     res.send('clear stores exhibition info');
 }
 
+const remove = async(req,res)=>{
+    let email = req.body.email;
+    
+    Store.deleteOne({email:email},function(err,result){
+        if(err){
+            console.log(err);
+        }else{
+            // console.log(result);
+            console.log('store removed')
+            res.json({status:200,msg:result});
+        }
+    })
+}
+
+const getStoreSchema = (req,res)=>{
+    console.log(Object.keys(StoreSchema.obj));
+    res.json({status:200,msg:Object.keys(StoreSchema.obj)});
+}
+
 module.exports = {
     create,
     getStore,
     updateStore,
     getAllStores,
     getPassword,
-    clearStoreExhibit
+    clearStoreExhibit,
+    remove,
+    getStoreSchema,
 }
