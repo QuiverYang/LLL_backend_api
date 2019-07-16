@@ -145,6 +145,24 @@ const login = async (req,res)=>{
         res.json({status:403,msg:'wrong password'})
     }
 }
+const edit = async (req,res)=>{
+    const email = req.body.email;
+    User.updateOne({email:email},{$set:{
+        name : req.body.name,
+        phone: req.body.phone,
+        password:req.body.password
+    }},function(error, user){
+        if(error){
+            console.log('updateStore error:'+error)
+            res.json({status:400,msg:error});
+        }else{
+            if(user){
+                res.json({status:200,msg:user});
+            }
+        }
+    })
+}
+
 const update = (req,res)=>{
     const email = req.body.email;
     User.updateOne({email:email},{$set:{
@@ -225,5 +243,6 @@ module.exports = {
     remove,
     getAllQueue,
     addStore,
-    getLineByEmail
+    getLineByEmail,
+    edit
 }

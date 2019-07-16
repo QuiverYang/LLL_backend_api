@@ -13,5 +13,6 @@ router.get('/get', userController.getUser);//leadline/user/get
 router.delete('/remove',userController.remove);//leadlin/user/remove
 router.post('/addStore',userController.addStore);//leadlin/user/addStore
 router.post('/getLineByEmail',userController.getLineByEmail);//leadlin/user/getUserByEmail
+router.post('/edit',userController.edit);//leadlin/user/edit
 
 module.exports = router;
