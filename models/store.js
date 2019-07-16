@@ -8,10 +8,14 @@ storeSchema = new Schema({
     info: {type:String, default:'暫未提供'},
     address:{type:String, default:'暫未提供'},
     email:{type:String, default:'暫未提供'},
-    currentExhibit: {type:String, default:''},
+    currentExhibit: {type:String, default:'未參展'},
     boothNo:{type:String, default:'暫未提供'},
+    postAuth:{type:Number, default:0},
     imgURL:{type:String, default:'暫未提供'},
-    queue: {type: Schema.Types.ObjectId, ref: 'Queue'}
+    visitorTime:[Date],
+    queue: {type: Schema.Types.ObjectId, ref: 'Queue'},
+    post:[{type:Schema.Types.ObjectId, ref:'Message', default:null}],
+    
 })
 
 storeSchema.query.byName = function(name){

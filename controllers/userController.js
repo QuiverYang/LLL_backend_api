@@ -174,7 +174,6 @@ const remove = (req,res)=>{
         if(err){
             console.log(err);
         }else{
-            // console.log(result);
             console.log('user removed')
             res.json({status:200,msg:result});
         }
@@ -213,8 +212,6 @@ const addStore = async(req,res)=>{
         }
         
     });
-    
-
 }
 const getUserSchema = (req,res)=>{
     res.json({status:200,msg:Object.keys(UserSchema.obj)});

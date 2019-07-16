@@ -15,6 +15,7 @@ const create = async (req, res)=>{
     let password = req.body.password;
     let currentExhibit = req.body.currentExhibit;
     let boothNo = req.body.boothNo;
+    let postAuth = req.body.postAuth;
     let queue = await Queue.create({
         exhibitionName:currentExhibit,
         storeName : name,
@@ -29,13 +30,15 @@ const create = async (req, res)=>{
         info: info,
         address:address,
         email:email,
+        postAuth:postAuth,
         currentExhibit:currentExhibit,
         password:password,
         boothNo:boothNo,
-        queue:queue
+        queue:queue,
     });
 
     store.save().then(()=>{
+        console.log('store created')
         res.json({status:200, msg:store});
     })
 }
@@ -141,7 +144,6 @@ const remove = async(req,res)=>{
         if(err){
             console.log(err);
         }else{
-            // console.log(result);
             console.log('store removed')
             res.json({status:200,msg:result});
         }
