@@ -3,35 +3,23 @@ const Store = require('../models/store');
 const UserQueue = require('../models/userqueue'); 
 const jwt = require('jsonwebtoken');
 const config = require('../config');
+const UserSchema = require('mongoose').model('User').schema;
 
 const create =  async (req, res, next)=>{
     let password = req.body.password;
-    let lastName = req.body.lastName;
-    let firstName = req.body.firstName;
+    let name = req.body.name;
     let birthday = req.body.birthday;
     let phone = req.body.phone;
     let gender = req.body.gender;
     let email = req.body.email;
-    // if(password === undefined||
-    //     lastName === undefined||
-    //     firstName === undefined||
-    //     birthday === undefined||
-    //     phone === undefined||
-    //     gender === undefined||
-    //     email === undefined){
-    //     res.json({status:400, msg:'Bad Request'});
-    //     return;
-    // }
+
     let tempUser = await User.findOneByEmail(email);
     if(tempUser != null){
         res.json({status:401,msg:'email has been registered'});
         return;
     }
     let user = new User({
-        name : {
-            firstName: firstName,
-            lastName:lastName
-        },
+        name: name,
         email:email,
         // id : await User.countDocuments()+1,
         birthday: birthday,
@@ -55,8 +43,8 @@ const test = (req,res)=>{
 
 //異步處理的寫法
 const getUser = async (req,res,next)=>{
-    let users = await User.findOneByName(req.query.firstName, req.query.lastName);
-    res.json({status:-1,msg:{users:users}});
+    let users = await User.findOneByName(req.query.name);
+    res.json({status:200,msg:{users:users}});
 }
 const getLineByEmail = async (req,res,next)=>{
     let user = await User.findOneByEmail(req.body.email).populate({
@@ -147,25 +135,19 @@ const login = async (req,res)=>{
 }
 const update = (req,res)=>{
     const email = req.body.email;
-    User.updateOne({email:email},{$set:{
-        name : {
-            firstName: req.body.firstName,
-            lastName:req.body.lastName
-        },
-        email:req.body.email,
-        birthday: req.body.birthday,
-        gender: req.body.gender,
-        phone: req.body.phone,
-        password:req.body.password
-    }},function(error, user){
+    let postKeyValue = req.body.postKeyValue;
+    let input = req.body.input;
+    User.updateOne({email:email},{
+        [postKeyValue]:input
+     },function(error, user2){
         if(error){
             console.log('updateStore error:'+error)
         }else{
-            if(user){
-                res.json({status:200,msg:user});
+            if(user2){
+                res.json({status:200,msg:user2});
             }
         }
-    })
+     })
 }
 const remove = (req,res)=>{
     let email = req.body.email;
@@ -213,8 +195,11 @@ const addStore = async(req,res)=>{
         }
         
     });
-
     
+
+}
+const getUserSchema = (req,res)=>{
+    res.json({status:200,msg:Object.keys(UserSchema.obj)});
 }
 module.exports = {
     create,
@@ -225,5 +210,6 @@ module.exports = {
     remove,
     getAllQueue,
     addStore,
-    getLineByEmail
+    getLineByEmail,
+    getUserSchema
 }

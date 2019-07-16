@@ -18,6 +18,6 @@ router.use('/test',testRouter);//leadline/test
 router.use('/auth',authRouter);//leadline/auth
 router.use('/email',emailRouter);//leadline/email
 router.use('/uploads',uploadRouter);//leadline/uploads
-router.use(authController.checkToken);
+// router.use(authController.checkToken);
 
 module.exports = router;
