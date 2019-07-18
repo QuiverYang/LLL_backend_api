@@ -12,4 +12,5 @@ router.put('/clearStoreExhibit',storeController.clearStoreExhibit);
 router.post('/searchStores',storeController.searchStores);
 router.delete('/remove',storeController.remove);
 router.get('/getStoreSchema',storeController.getStoreSchema);
+router.get('/getQueueInfo',storeController.getQueueInfo);
 module.exports = router;

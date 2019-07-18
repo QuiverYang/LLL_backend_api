@@ -8,6 +8,7 @@ router.post('/login',userController.login)//leadline/user/login
 router.post('/getAllQueue',userController.getAllQueue)//leadlin/user/getAllQueue
 router.put('/update',userController.update);
 router.get('/getStore',storeController.getStore);
+router.get('/getUserSchema',userController.getUserSchema)//leadline/user/getUserSchema
 router.get('/get', userController.getUser);//leadline/user/get
 router.delete('/remove',userController.remove);//leadlin/user/remove
 router.post('/addStore',userController.addStore);//leadlin/user/addStore

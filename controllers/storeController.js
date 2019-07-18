@@ -155,6 +155,41 @@ const getStoreSchema = (req,res)=>{
     res.json({status:200,msg:Object.keys(StoreSchema.obj)});
 }
 
+const getQueueInfo = async (req,res)=>{
+    let stores = await Store.find().populate({
+        path: 'queue',
+        populate: {
+          path: 'visitor', 
+        }
+      })
+    let infos = [];
+    //讓vt初始化為8-18的數字組
+    const openTime = 8;
+    const closeTime = 18;
+    
+    for(let i = 0; i < stores.length; i++){
+        let obj = {}
+        obj.name = stores[i].name;
+        obj.email = stores[i].email;
+        let vt =[];
+        for(let j = openTime; j <=closeTime; j++){
+            vt[j-openTime]={時間:j,人數:0};
+        }
+        for(let j = 0; j < stores[i].visitorTime.length; j++){
+            let key = new Date(stores[i].visitorTime[j]).getHours();
+            // console.log(key)//這裡的key是local hour
+            if(key>=openTime && key<=closeTime){
+                vt[key-openTime]['人數']++;
+            }
+        }
+        obj.timeAndVisitor = vt;
+        infos.push(obj);
+    }
+
+    // console.log(infos)
+    res.json({status:200,msg:infos});  
+}
+
 module.exports = {
     create,
     getStore,
@@ -165,4 +200,5 @@ module.exports = {
     searchStores,
     remove,
     getStoreSchema,
+    getQueueInfo,
 }

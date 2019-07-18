@@ -2,6 +2,7 @@ const Queue = require('../models/queue');
 const QueueWay = require('../utils/queueWay');
 const User = require('../models/user');
 const Store = require('../models/store');
+const UserQueue = require('../models/userqueue'); 
 
 //先設定好店家的currentExhibition 然後用此參數去尋找這次有參加該展的廠商
 //創造出許多店家
@@ -63,7 +64,8 @@ const setStoresExihibit= async (req,res)=>{
 const addVisitor = async(req,res)=>{
     const userEmail = req.body.userEmail;
     const storeEmail = req.body.storeEmail;
-    if(userEmail === undefined|| storeEmail === undefined){
+    const myNum = req.body.myNum;
+    if(userEmail === undefined|| storeEmail === undefined|| myNum === undefined){
         res.json({status:400, msg:'input infomation missing'});
         return;
     }
@@ -73,27 +75,41 @@ const addVisitor = async(req,res)=>{
         res.json({status:400,msg:'invalid store Email'});
         return;
     }
-    const exhibitor = await Queue.findOne({storeName:store.name});
-    if(exhibitor == null){
-        res.json({status:400,msg:'invalid exhibitor'});
-        return;
-    }
     let user = await User.findOneByEmail(userEmail);
     if(user == null){
         //此處應修改為新建立一個user給他然後加入 depends on infomation in req.body
         res.json({status:400,msg:'invalid user email'});
         return;
     }
-    console.log(exhibitor.storeName);
-    Queue.updateOne({storeName:exhibitor.storeName},{$push:{ visitor: user }, $set:{total:Number(exhibitor.total)+1} },function(error, result){
+    let userqueue = new UserQueue({
+        myNum : myNum,
+        store : store
+    });
+    await userqueue.save();
+
+    User.updateOne({email:userEmail},{$push:{ line : userqueue }},function(error, result){
         if(error){
             console.log(error)
         }else{
-            // userController.addStore(userEmail);
-            res.json({status:200,msg:result});
+            Queue.updateOne({_id:store.queue._id},{$push:{visitor:user}},function(error, result){
+                if(error){
+                    console.log(error)
+                }else{
+                    Store.updateOne({email:storeEmail},{$push:{visitorTime:new Date}},function(error){
+                        if(error){
+                            console.log(error);
+                        }else{
+                            res.json({status:200, msg:'user and store added queue data'});
+                            console.log('user and store added queue data');
+                        }
+                    });
+                    
+                }
+            })
         }
+        
     });
-
+    
     
 }
 const test = (req,res)=>{
