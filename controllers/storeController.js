@@ -47,11 +47,13 @@ const getStore = async(req,res)=>{
     //post/get key value storeName
     let name = req.query.name;
     let store  = await Store.findOneByName(name);
+    console.log('getStore')
     res.json({status:200,msg:store});
 }
 
 const getAllStores = async function (req,res){
     let stores = await Store.findAllStores();
+    console.log('getAllStores')
     res.json({status:200, msg:stores});
 }
 
@@ -77,6 +79,7 @@ const searchStores = async function (req,res){
         }  
         
     })
+    console.log('searchStore')
     res.json({status:200, msg:storesInfo});
 }
 
@@ -110,6 +113,7 @@ const updateStore = async (req,res)=>{
             console.log('updateStore error:'+error)
         }else{
             if(store2){
+                console.log(store2.name + ' has been updated')
                 res.json({status:200,msg:store2});
             }
         }
@@ -128,12 +132,14 @@ const getPassword = async (req,res)=>{
         emailController.send2(toEmail,emailSubject,emailContent);
         res.send('password has been sent to "'+email+'".')
     }else{
+        console.log('getPassword')
         res.send('email dosen\'t exsist');
     }
 }
 
 const clearStoreExhibit = async (req,res)=>{
     await Store.updateMany({},{$set:{currentExhibit:''}});
+    console.log('clear stores exhibition info')
     res.send('clear stores exhibition info');
 }
 
@@ -151,12 +157,13 @@ const remove = async(req,res)=>{
 }
 
 const getStoreSchema = (req,res)=>{
-    console.log(Object.keys(StoreSchema.obj));
+    console.log('getStoreSchema');
     res.json({status:200,msg:Object.keys(StoreSchema.obj)});
 }
 
 const getQueueInfo = async (req,res)=>{
-    let stores = await Store.find().populate({
+    let currentExhibit = req.body.currentExhibit;
+    let stores = await Store.find({currentExhibit:'美食展'}).populate({
         path: 'queue',
         populate: {
           path: 'visitor', 
@@ -186,7 +193,7 @@ const getQueueInfo = async (req,res)=>{
         infos.push(obj);
     }
 
-    // console.log(infos)
+    console.log('getQueueInfo')
     res.json({status:200,msg:infos});  
 }
 

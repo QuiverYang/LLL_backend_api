@@ -66,12 +66,12 @@ const getAllQueue = async (req,res,next)=>{
     if(exhibitionName === undefined){
         res.json({status:400,msg:'undefinded exhibitionName '})
     }
-    console.log(exhibitionName)
+    // console.log(exhibitionName)
     const stores = await Store.find({currentExhibit:exhibitionName}).populate('queue');
     if(stores == null){
         res.json({status:400,msg:'invalid exhibitionName'})
     }
-    console.log(stores);
+    // console.log(stores);
     let user = await User.findOneByEmail(email).populate({
         path: 'line', //对应user 设置字段
         populate: {
@@ -105,6 +105,7 @@ const getAllQueue = async (req,res,next)=>{
             myNum: myNum
         })
     })
+    console.log('getAllQueue');
     res.json({status:200,msg:storesInfo});
 }
 
@@ -145,6 +146,7 @@ const edit = async (req,res)=>{
             res.json({status:400,msg:error});
         }else{
             if(user){
+                console.log(user.name + ' has been edited')
                 res.json({status:200,msg:user});
             }
         }
@@ -163,6 +165,7 @@ const update = (req,res)=>{
         }else{
             if(user2){
                 res.json({status:200,msg:user2});
+                console.log(user2.name+' has been updated')
             }
         }
      })

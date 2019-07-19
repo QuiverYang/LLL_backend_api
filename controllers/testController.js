@@ -2,6 +2,7 @@ const QueueWay = require('../utils/queueWay');
 const queue = new QueueWay();
 const Store = require('../models/store');
 var StoreSchema = require('mongoose').model('Store').schema;
+const Exhibit = require('../models/exhibition');
 
 const a = (req,res)=>{
     queue.enqueue('test1');
@@ -17,11 +18,32 @@ const b =(req,res)=>{
     return;
 }
 const c =(req,res)=>{
-    res.send('test c')
+    let name = req.body.name
+    console.log(name);
+    res.send(name);
 }
-const d = async (req,res)=>{
-    console.log(Object.keys(StoreSchema.obj));
-    res.send(Object.keys(StoreSchema.obj));
+const d = (req,res)=>{
+    Store.find(function(err,stores){
+        if(err){
+            console.log(err);
+            res.send(error);
+        }else{
+            if(stores !== null){
+                let exName = stores[0].currentExhibit;
+                console.log('currentExhibit: '+exName);
+                Exhibit.findOne({name:exName},function(err,ex){
+                    if(err){
+                        console.log('exhibit error');
+                    }else{
+                        let exStart = ex.start;
+                        console.log(exStart > new Date(2018,01,01));
+                        res.send(exStart)
+                    }
+                })
+            }
+        }
+    })
+    
 }
 module.exports = {
     a,
