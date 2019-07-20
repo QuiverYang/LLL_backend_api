@@ -162,8 +162,8 @@ const getStoreSchema = (req,res)=>{
 }
 
 const getQueueInfo = async (req,res)=>{
-    let currentExhibit = req.body.currentExhibit;
-    let stores = await Store.find({currentExhibit:'美食展'}).populate({
+    let currentExhibit = req.query.name;
+    let stores = await Store.find({currentExhibit:currentExhibit}).populate({
         path: 'queue',
         populate: {
           path: 'visitor', 
@@ -192,8 +192,33 @@ const getQueueInfo = async (req,res)=>{
         obj.timeAndVisitor = vt;
         infos.push(obj);
     }
-
     console.log('getQueueInfo')
+    res.json({status:200,msg:infos});  
+}
+
+const getQueueInfo2 = async (req,res)=>{
+    let currentExhibit = req.query.name;
+    let stores = await Store.find({currentExhibit:currentExhibit}).populate({
+        path: 'queue',
+        populate: {
+          path: 'visitor', 
+        }
+      })
+    let infos = [];
+    //   required info schema:
+    //   [{name:name,email:email,inlineNum:inlineNum, totalQueueNum: totalQueueNum},{},{}......]
+    let obj = {};
+    stores.forEach(function(store,index,arr){
+        obj={}
+        obj.name = store.name;
+        obj.email = store.email;
+        let total = store.queue.total;
+        let currentNum = store.queue.current;
+        obj.inlineNum = total-currentNum;
+        obj.totalQueueNum = total;
+        infos.push(obj);
+    })
+    console.log('getQueueInfo2')
     res.json({status:200,msg:infos});  
 }
 
@@ -208,4 +233,5 @@ module.exports = {
     remove,
     getStoreSchema,
     getQueueInfo,
+    getQueueInfo2
 }

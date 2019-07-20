@@ -23,6 +23,7 @@ const c =(req,res)=>{
     res.send(name);
 }
 const d = (req,res)=>{
+    //找到每間攤位展期時間是否超過
     Store.find(function(err,stores){
         if(err){
             console.log(err);
@@ -36,7 +37,7 @@ const d = (req,res)=>{
                         console.log('exhibit error');
                     }else{
                         let exStart = ex.start;
-                        console.log(exStart > new Date(2018,01,01));
+                        console.log(exStart > new Date(2018,01,01));//true
                         res.send(exStart)
                     }
                 })

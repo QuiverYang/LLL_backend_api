@@ -91,7 +91,7 @@ const addVisitor = async(req,res)=>{
         if(error){
             console.log(error)
         }else{
-            Queue.updateOne({_id:store.queue._id},{$push:{visitor:user}},function(error, result){
+            Queue.updateOne({_id:store.queue._id},{$push:{visitor:user},$inc:{total:1}},function(error, result){
                 if(error){
                     console.log(error)
                 }else{
