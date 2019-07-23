@@ -66,8 +66,8 @@ const getAllQueue = async (req,res,next)=>{
     if(exhibitionName === undefined){
         res.json({status:400,msg:'undefinded exhibitionName '})
     }
-    // console.log(exhibitionName)
-    const stores = await Store.find({currentExhibit:exhibitionName}).populate('queue');
+    //console.log(exhibitionName)
+    const stores = await Store.find({currentExhibit:exhibitionName}).updateAuth('queue');
     if(stores == null){
         res.json({status:400,msg:'invalid exhibitionName'})
     }
