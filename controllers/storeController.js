@@ -5,7 +5,6 @@ const Queue = require('../models/queue');
 const emailController = require('../controllers/emailController');
 const StoreSchema = require('mongoose').model('Store').schema;
 
-
 const create = async (req, res)=>{
     let name = req.body.name;
     let phone = req.body.phone;
@@ -121,14 +120,14 @@ const updateStore = async (req,res)=>{
     
 }
 
-const getPassword = async (req,res)=>{
+const getPassword = async (req, res)=>{
     let name = req.body.name;
     let email = req.body.email;
     let store = await Store.findOneByEmail(email);
     if(name === store.name && email === store.email){
         let emailSubject = '店家密碼取回';
         let emailContent = `<h2>店家帳號:${name}</h2> <h3>店家密碼:${store.password}</h3>`
-        let toEmail = 'yangmenglin1119@gmail.com'
+        let toEmail = 'bess_2500@yahoo.com.tw'
         emailController.send2(toEmail,emailSubject,emailContent);
         res.send('password has been sent to "'+email+'".')
     }else{
@@ -233,5 +232,5 @@ module.exports = {
     remove,
     getStoreSchema,
     getQueueInfo,
-    getQueueInfo2
+    getQueueInfo2,
 }

@@ -3,9 +3,6 @@ const config = require('../config');
 var nodemailer = require('nodemailer');
 const User = require('../models/user');
 
-const test = (req,res)=>{
-    res.send('email test route')
-}
 const send2 = function(toEmail,emailSubject, emailContent){
     var transporter = nodemailer.createTransport({
         service:'Gmail',
@@ -14,7 +11,6 @@ const send2 = function(toEmail,emailSubject, emailContent){
             pass:'ss72077!'
         }
     });
-    
     var options = {
         from: 'ccc72077@gmail.com',
         to:toEmail,
@@ -25,7 +21,6 @@ const send2 = function(toEmail,emailSubject, emailContent){
             path: ''
         }]
     }
-    
     transporter.sendMail(options,function(error,info){
         if(error){
             console.log(error);
@@ -107,9 +102,46 @@ const sendPassword = async(req,res,next) =>{
         }
     })
 }
+
+const sendSystemEmail = function(to, subject, text, html)  {
+    let transporter = nodemailer.createTransport({
+        service: 'Gmail',
+        auth: {
+            user: 'ccc72077@gmail.com',
+            pass: 'ss72077!'
+        }
+    });
+    let options = {
+        from: 'ccc72077@gmail.com',
+        to: to,
+        subject: subject,
+        text: text,
+        html: html,
+        //如果要發送附件，再加以下
+        // attachments: [{
+        //     filename: '',
+        //     path: ''
+        // }]
+    }
+    transporter.sendMail(options, function(error, info){
+        if(error)  {
+            console.log('發送信件錯誤：' + error);
+            res.json({status: 400, serverMsg: '400, bad Request,, send forget psw verify email failure.', clientMsg: '連線異常，請重新嘗試'});
+            return; 
+        }
+        if(!info)  {
+            console.log('發送信件錯誤，找不到info');
+            res.json({status: 400, serverMsg: '400, bad Request,, send forget psw verify email failure.', clientMsg: '連線異常，請重新嘗試'});
+            return;
+        }
+        console.log('發送信件成功' + info.response);
+        rres.json({status: 200, serverMsg: '200, ok, send forget psw verify email success.', clientMsg: '驗證碼已發送至' + email});
+    });
+}
+
 module.exports = {
     send,
     sendPassword,
-    test,
-    send2
+    send2,
+    sendSystemEmail
 }
