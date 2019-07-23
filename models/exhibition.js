@@ -9,4 +9,9 @@ exhibitionSchema = new Schema({
     //預設回傳一個 UTC + 0 的 Date
 });
 
+//0723，用展覽名稱查找
+exhibitionSchema.query.byName = function(name)  {
+    return this.where({name: name});
+};
+
 module.exports = mongoose.model('Exhibition',exhibitionSchema);
