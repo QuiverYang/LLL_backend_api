@@ -1,6 +1,7 @@
 const Admin = require('../models/admin');
 const User = require('../models/user');
 const Store = require('../models/store');
+const Exhibit = require('..//models/exhibition');
 
 const create =  async (req, res, next)=>{
     //用postman創造管理者
@@ -43,6 +44,10 @@ const getAllStores = async(req,res)=>{
     let stores = await Store.find();
     res.json({status:200, msg:{stores:stores}})
 }
+const getAllExhibitions = async(req,res)=>{
+    let exhibitions = await Exhibit.find();
+    res.json({status:200, msg:{exhibitions:exhibitions}})
+}
 
 
 
@@ -50,5 +55,6 @@ module.exports = {
     create,
     getAllStores,
     getAllUsers,
+    getAllExhibitions,
     test,
 }

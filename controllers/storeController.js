@@ -206,12 +206,13 @@ const getQueueInfo2 = async (req,res)=>{
       })
     let infos = [];
     //   required info schema:
-    //   [{name:name,email:email,inlineNum:inlineNum, totalQueueNum: totalQueueNum},{},{}......]
+    //   [{name:name,email:email,boothNo:boothNo,inlineNum:inlineNum, totalQueueNum: totalQueueNum},{},{}......]
     let obj = {};
     stores.forEach(function(store,index,arr){
         obj={}
         obj.name = store.name;
         obj.email = store.email;
+        obj.boothNo = store.boothNo;
         let total = store.queue.total;
         let currentNum = store.queue.current;
         obj.inlineNum = total-currentNum;
