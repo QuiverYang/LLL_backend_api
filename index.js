@@ -2,6 +2,7 @@ const express = require('express');
 const config = require('./config');
 const app = express();
 const mongoose = require('mongoose');
+mongoose.set('useFindAndModify', false);
 const router = require('./routes');
 const bodyParser = require('body-parser');
 app.use(function(req, res, next) {

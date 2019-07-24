@@ -14,9 +14,9 @@ const uploadRouter = require('./uploadRoute');
 const exhibitionRouter = require('./exhibitionRoute')
 
 router.use('/auth',authRouter);//leadline/auth
-router.use('/booth',boothRoute);//leadline/booth
-router.use(authController.checkBoothToken);
-router.use('/store',storeRouter);//leadline/store
+router.use('/booth',boothRoute);//leadline/booth，0723：展位端不需要通過token認證的api
+router.use(authController.checkBoothToken);  //：展位端每次登入的token認證
+router.use('/store',storeRouter);//leadline/store，0723：展位端需要通過token認證的api
 router.use('/user', userRouter);//leadline/user
 router.use('/admin',adminRouter);//leadline/admin
 router.use('/test',testRouter);//leadline/test

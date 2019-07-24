@@ -5,7 +5,7 @@ const Queue = require('../models/queue');
 const emailController = require('../controllers/emailController');
 const StoreSchema = require('mongoose').model('Store').schema;
 
-const create = async (req, res, next) => {
+const create = async(req, res, next) => {
     let name = req.body.name;
     let email = req.body.email
     let password = req.body.password;
