@@ -20,5 +20,7 @@ router.delete('/remove', exhibitionController.remove);
 //leadline/exhibition/getAllPosts
 router.get('/getAllPosts',exhibitionController.getAllPosts);
 
+//leadline/exhibition/getAllPostsLength
+router.get('/getAllPostsLength',exhibitionController.getAllPostsLength);
 
 module.exports = router;

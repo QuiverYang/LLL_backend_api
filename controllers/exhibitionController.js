@@ -79,14 +79,25 @@ const getExhibitionSchema = (req,res)=>{
     console.log('getExhibitionSchema');
     res.json({status:200,msg:Object.keys(ExhibitionSchema.obj)});
 }
-const getAllPosts = (req,res)=>{
+const getAllPosts = async (req,res)=>{
     let name = req.query.name;
-    Exhibit.findOne({name:name},function(err,exhibition){
+    let exhibit = await Exhibit.findOne({name:name},function(err){
         if(err){
             console.log('getAllPosts error: '+ error);
+        }
+    }).populate('allPosts');
+    console.log('getAllPosts');
+    res.json({status:200,msg:exhibit.allPosts});
+}
+const getAllPostsLength= (req,res)=>{
+    let name = req.query.name;
+    Exhibit.findOne({name:name},function(err,ex){
+        if(err){
+            console.log('getAllPostsLength error '+ err);
+            return;
         }else{
-            console.log('getAllPosts called by '+ name);
-            res.json({status:200,msg:allPosts});
+            console.log('getAllPostLength');
+            res.json({status:200, msg:ex.allPosts.length})
         }
     })
 }
@@ -97,5 +108,6 @@ module.exports = {
     getExhibitionSchema,
     remove,
     update,
-    getAllPosts
+    getAllPosts,
+    getAllPostsLength,
 }

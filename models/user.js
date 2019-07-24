@@ -10,7 +10,7 @@ userSchema = new Schema({
     phone: {type:String, default:'暫未提供'},
     password: {type:String, default:'暫未提供'},
     auth: {type:Boolean, default:false},
-    line: [{type: Schema.Types.ObjectId, ref: 'UserQueue',default:[]}]
+    line: [{type: Schema.Types.ObjectId, ref: 'UserQueue',default:[]}],
 });
 
 userSchema.statics.findOneByName = function(name) {

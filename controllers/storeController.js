@@ -4,6 +4,8 @@ const User = require('../models/user')
 const Queue = require('../models/queue');
 const emailController = require('../controllers/emailController');
 const StoreSchema = require('mongoose').model('Store').schema;
+const Message = require('../models/message');
+const Exhibition = require('../models/exhibition');
 
 
 const create = async (req, res)=>{
@@ -92,20 +94,6 @@ const updateStore = async (req,res)=>{
         res.json({status:1, msg:'店家不存在'});
         return;
     }
-    let newPhone = Checker.isfilled(req.body.phone) ? store.phone.phone:req.body.phone;
-    let newInfo = Checker.isfilled(req.body.info) ? store.info:req.body.info;
-    let newAddress = Checker.isfilled(req.body.address)? store.address:req.body.address;
-    let newEmail = Checker.isfilled(req.body.email) ? store.eamil:req.body.email;
-    let newCurrentExhibit = Checker.isfilled(req.body.currentExhibit) ? store.eamil:req.body.currentExhibit;
-    let newName = Checker.isfilled(req.body.name)? store.name:req.body.name;
-    let newPassword = Checker.isfilled(req.body.password)? store.password:req.body.password;
-    let boothNo = Checker.isfilled(req.body.boothNo) ? store.boothNo:req.body.boothNo;
-    let imgURL = Checker.isfilled(req.body.imgURL) ? store.imgURL:req.body.imgURL;
-    
-    //全部更新updateMany.({}空格代表全部條件都選,{$set:{object}}要替換的內容)  加了$set 代表只替換相對的資訊 原本其他資訊保留不刪除
-    // await Store.updateOne({name:req.body.storeName}, { $set: 
-    //     { phone: {cellphone:cell,fixphone:fix},email:email }
-    //  });
     Store.updateOne({email:email},{
         [postKeyValue]:input
      },function(error, store2){
@@ -118,7 +106,28 @@ const updateStore = async (req,res)=>{
             }
         }
      })
-    
+}
+
+const addPost = async (req,res) =>{
+    let email = req.body.email;
+    let title = req.body.title;
+    let content = req.body.content;
+    let post = await Message.create({title:title, content:content});
+    Store.findOneAndUpdate({email:email},{$push:{post:post}},function(err,store){
+        if(err){
+            console.log('addPost error '+ err);
+            return;
+        }else{
+            Exhibition.updateOne({name:store.currentExhibit},{$push:{allPosts:post}},function(err){
+                if(err){
+                    console.log('update exhibition '+store.currentExhibit+' error');
+                    return;
+                }
+            })
+            console.log('addPost from storeController and update exhibition allPosts');
+            res.json({status:200,msg:store});
+        }
+    })
 }
 
 const getPassword = async (req,res)=>{
@@ -234,5 +243,6 @@ module.exports = {
     remove,
     getStoreSchema,
     getQueueInfo,
-    getQueueInfo2
+    getQueueInfo2,
+    addPost,
 }

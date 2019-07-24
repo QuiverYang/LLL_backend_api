@@ -35,4 +35,7 @@ router.get('/getQueueInfo',storeController.getQueueInfo);
 //leadline/store/getQueueInfo2 拿到店家排隊資訊並返回
 router.get('/getQueueInfo2',storeController.getQueueInfo2);
 
+//leadline/store/addPost
+router.put('/addPost',storeController.addPost);
+
 module.exports = router;

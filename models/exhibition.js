@@ -7,7 +7,7 @@ exhibitionSchema = new Schema({
     start:{type:Date, default: new Date()},
     end:{type:Date, default: new Date()},
     //預設回傳一個 UTC + 0 的 Date
-    allPosts:{type:[String], default:[]},
+    allPosts:[{type:Schema.Types.ObjectId, ref: 'Message',default:[]}],
 });
 
 module.exports = mongoose.model('Exhibition',exhibitionSchema);
