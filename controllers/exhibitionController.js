@@ -1,24 +1,33 @@
 const Exhibit = require('../models/exhibition');
 const ExhibitionSchema = require('mongoose').model('Exhibition').schema;
-
+Date.prototype.addHours = function(h) {
+    this.setHours(this.getHours() + h);
+    return this;
+};
 
 const create =(req, res)=>{
     let name = req.body.name;
     let start = req.body.start;
     let end = req.body.end;
-    if(name === undefined || start === undefined || end ===undefined){
+    let address = req.body.address;
+    console.log('start: '+ start);
+    console.log('end '+ end);
+    if(name === undefined || start === undefined || end ===undefined || address === undefined){
         console.log('missing input form exhibition create');
         res.send('missing input form exhibition create');
         return;
     }
     Exhibit.create({
         name:name,
-        start:new Date(start),
-        end:new Date(end)
+        address:address,
+        start:new Date(start).addHours(8),
+        end:new Date(end).addHours(8),
     })
     console.log('exhibtion created');
     res.json({status:200,msg:'exhibition created'})
 }
+
+
 
 const remove = (req,res)=>{
     let name = req.body.name;
@@ -75,15 +84,36 @@ const getAllExhibitName = (req,res)=>{
         }
     })
 }
+const getNamesAndAddress =(req,res)=>{
+    var result = [];
+    var tempExName = [];
+    Exhibit.find(function(err,exs){
+        if(err){
+            console.log('getNamesAndAddress error');
+            res.json({status:400,msg:'getNamesAndAddress'});
+            return;
+        }else{
+            exs.forEach(function(ex,index,arr){
+                result.push({name:ex.name, address: ex.address});
+            })
+            res.json({status:200, msg:result});
+        }
+    })
+}
 const getExhibitionSchema = (req,res)=>{
     console.log('getExhibitionSchema');
     res.json({status:200,msg:Object.keys(ExhibitionSchema.obj)});
 }
 const getAllPosts = async (req,res)=>{
     let name = req.query.name;
-    let exhibit = await Exhibit.findOne({name:name},function(err){
+    let exhibit = await Exhibit.findOne({name:name},function(err,exhibit){
         if(err){
             console.log('getAllPosts error: '+ error);
+            return;
+        }else if(!exhibit){
+            console.log('exhibition invalid');
+            res.json({status:400,msg:'exhibition invalid'});
+            return;
         }
     }).populate('allPosts');
     console.log('getAllPosts');
@@ -95,9 +125,14 @@ const getAllPostsLength= (req,res)=>{
         if(err){
             console.log('getAllPostsLength error '+ err);
             return;
-        }else{
+        }else if(!ex){
+            console.log('exhibition invalid');
+            res.json({status:400,msg:'exhibition invalid'});
+            return;
+        }
+        else{
             console.log('getAllPostLength');
-            res.json({status:200, msg:ex.allPosts.length})
+            res.json({status:200, msg:ex.allPosts.length});
         }
     })
 }
@@ -110,4 +145,5 @@ module.exports = {
     update,
     getAllPosts,
     getAllPostsLength,
+    getNamesAndAddress
 }

@@ -23,4 +23,7 @@ router.get('/getAllPosts',exhibitionController.getAllPosts);
 //leadline/exhibition/getAllPostsLength
 router.get('/getAllPostsLength',exhibitionController.getAllPostsLength);
 
+//leadlin/exhibition/getNamesAndAddress
+router.get('/getNamesAndAddress',exhibitionController.getNamesAndAddress);
+
 module.exports = router;
