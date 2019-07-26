@@ -10,9 +10,10 @@ const create =(req, res)=>{
     let start = req.body.start;
     let end = req.body.end;
     let address = req.body.address;
+    let url = req.body.url;
     console.log('start: '+ start);
     console.log('end '+ end);
-    if(name === undefined || start === undefined || end ===undefined || address === undefined){
+    if(name === undefined || start === undefined || end ===undefined || address === undefined || url === undefined){
         console.log('missing input form exhibition create');
         res.send('missing input form exhibition create');
         return;
@@ -20,6 +21,7 @@ const create =(req, res)=>{
     Exhibit.create({
         name:name,
         address:address,
+        url:url,
         start:new Date(start).addHours(8),
         end:new Date(end).addHours(8),
     })
@@ -94,7 +96,7 @@ const getNamesAndAddress =(req,res)=>{
             return;
         }else{
             exs.forEach(function(ex,index,arr){
-                result.push({name:ex.name, address: ex.address});
+                result.push({name:ex.name, address: ex.address, url: ex.url});
             })
             res.json({status:200, msg:result});
         }
