@@ -112,22 +112,46 @@ const addPost = async (req,res) =>{
     let email = req.body.email;
     let title = req.body.title;
     let content = req.body.content;
-    let post = await Message.create({title:title, content:content});
-    Store.findOneAndUpdate({email:email},{$push:{post:post}},function(err,store){
+    Store.findOne({email:email, postAuth:{$gt:0}},async function(err,store){
         if(err){
-            console.log('addPost error '+ err);
+            console.log('addPost error: '+err)
             return;
         }else{
-            Exhibition.updateOne({name:store.currentExhibit},{$push:{allPosts:post}},function(err){
-                if(err){
-                    console.log('update exhibition '+store.currentExhibit+' error');
-                    return;
-                }
-            })
-            console.log('addPost from storeController and update exhibition allPosts');
-            res.json({status:200,msg:store});
+            
+            if(store === null){
+                res.json({status:403, msg:'invalid email or postAuth'});
+                return;
+            }else {
+                let post = await Message.create({title:title, content:content});
+                console.log(post);
+                Store.updateOne({email:email, postAuth:{$gt:0}},{$push:{post:post}, $inc:{postAuth:-1}}, function(err){
+                    if(err){
+                        res.json({status:404,msg:'404 server error'});
+                        return;
+                    }else{
+                        res.json({status:200,msg:'update successful'});
+                        console.log('addPost');
+                    }
+                })
+            }
         }
     })
+    // Store.findOneAndUpdate({email:email, postAuth:{$gt:0}},{$push:{post:post}, $inc:{postAuth:-1}},async function(err,store){
+    //     if(err){
+    //         console.log('addPost error '+ err);
+    //         return;
+    //     }else{
+    //         let post = await Message.create({title:title, content:content});
+    //         Exhibition.updateOne({name:store.currentExhibit},{$push:{allPosts:post}},function(err){
+    //             if(err){
+    //                 console.log('update exhibition '+store.currentExhibit+' error');
+    //                 return;
+    //             }
+    //         })
+    //         console.log('addPost from storeController and update exhibition allPosts');
+    //         res.json({status:200,msg:store});
+    //     }
+    // })
 }
 
 const getPassword = async (req,res)=>{
