@@ -35,4 +35,7 @@ router.put('/clearStoreExhibit', storeController.clearStoreExhibit);
 //leadline/store/remove 刪除展位
 router.delete('/remove', storeController.remove);
 
+//leadline/store/initialBoothDataByServer 返回展位資料
+router.post('/remove', storeController.initialBoothDataByServer);
+
 module.exports = router;
