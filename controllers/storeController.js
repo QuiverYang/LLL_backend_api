@@ -219,6 +219,18 @@ const remove = async(req, res, nex) => {
     })
 };
 
+//0728
+const initialBoothDataByServer = async(req, res, nex) => {
+    let email = req.body.email;
+    let password = req.body.password;
+    let booth = await Store.findOne().byEmailPsw(email, password);
+    if(!booth)  {
+        res.json({status: 404, serverMsg: '404, not found, find booth data failure.', clientMsg: '展覽資料載入失敗，請重新登入'});
+        return;
+    }
+    res.json({status: 200, booth: booth, serverMsg: '200, ok, find booth data success.', clientMsg: '展覽資料載入成功'});
+};
+
 module.exports = {
     create, 
     getPassword,
@@ -230,5 +242,6 @@ module.exports = {
     getQueueInfo,
     getQueueInfo2,
     clearStoreExhibit,
-    remove
+    remove,
+    initialBoothDataByServer
 }

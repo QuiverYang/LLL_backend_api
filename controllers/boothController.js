@@ -18,7 +18,7 @@ const sendVerifyNumEmail = async(req, res, next) => {
         return;
     }
     let verifyNum = String(getRandom(100001, 999998));
-    let sendVerifyNumTime = getCurrentTime(new Date(new Date().getTime() + 28800000));
+    let sendVerifyNumTime = getCurrentTime(new Date(new Date().getTime() + 28800000));  //+ 28800000是因時區問題
     let to = email;
     let subject = '忘記密碼通知(送出時間：' + sendVerifyNumTime + ')';
     let text = '敬愛的Lead Long Line展覽端用戶您好：\n\n'
@@ -54,15 +54,16 @@ const resetPassword = async(req, res, next) => {
         res.json({status: 404, serverMsg: '404, not found, password contains english and num.', clientMsg: '密碼需同時包含英文與數字'});
         return;
     }
-    Store.updateOne({email: email}, {$set:{password: etInputNewPsw}});
-    // await Store.findOneAndUpdate({email: email}, {$set:{password: etInputNewPsw}}, {new: true});
-    let booth  = await Store.findOne().byEmail(email);
-    if(!booth)  {
-        res.json({status: 400, serverMsg: '400, bad request, reset password failed.', clientMsg: '連線異常，請重新嘗試'});
-        return;
-    }
-    console.log(booth);
-    res.json({status: 200, newPsw: etInputNewPsw, serverMsg: '200, ok, reset password success.', clientMsg: '密碼已重設，請使用新密碼登入'});
+    
+    Store.findOneAndUpdate({email: email}, {$set:{password: etInputNewPsw}}, {new: true}, function(err, booth)  {
+        console.log(email);
+        if(err || !booth)  {
+            res.json({status: 400, serverMsg: '400, bad request, reset password failed.', clientMsg: '連線異常，請重新嘗試'});
+            return;
+        }
+        console.log(booth);
+        res.json({status: 200, newPsw: etInputNewPsw, serverMsg: '200, ok, reset password success.', clientMsg: '密碼已重設，請使用新密碼登入'});
+    });
 };
 
 

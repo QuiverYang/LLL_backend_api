@@ -29,6 +29,11 @@ storeSchema.query.byPassword = function(password)  {
     return this.where({password: password});
 };
 
+//0728，利用Email和Password初始化展位資訊
+storeSchema.query.byEmailPsw = function(email, password)  {
+    return this.where({email: email, password: password});
+};
+
 storeSchema.query.byName = function(name)  {
     return this.where({name:name});
 }
