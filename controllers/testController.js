@@ -6,13 +6,11 @@ const Exhibit = require('../models/exhibition');
 const User = require('../models/user'); 
 const UserQueue = require('../models/userqueue');
 const Queue = require('../models/queue');
+const OldExhibit = require('../models/old_exhibition');
+const mongoose = require('mongoose');
 
 const a = (req,res)=>{
-    queue.enqueue('test1');
-    queue.enqueue('test2');
-    console.log(queue.size());
-    let bb = queue.size();
-    res.send(bb+'');
+    res.send(new Date());
 }
 const b =(req,res)=>{
     let name = req.body.name;
@@ -21,9 +19,20 @@ const b =(req,res)=>{
     return;
 }
 const c =(req,res)=>{
-    let name = req.body.name
-    console.log(name);
-    res.send(name);
+    Exhibit.find(function(err, docs) {
+            docs.forEach(async function(doc){
+                // doc._id = mongoose.Types.ObjectId();
+                // doc.isNew = true; //<--------------------IMPORTANT
+                // await doc.save();
+                var newdoc = new OldExhibit(doc);
+                newdoc._id = mongoose.Types.ObjectId();
+                newdoc.isNew = true;
+                console.log(newdoc);
+                await newdoc.save();
+            })
+            res.send('clone done')
+        }
+    );
 }
 const d = (req,res)=>{
     //找到每間攤位展期時間是否超過

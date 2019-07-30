@@ -1,5 +1,7 @@
 const Exhibit = require('../models/exhibition');
 const ExhibitionSchema = require('mongoose').model('Exhibition').schema;
+const Store = require('../models/store');
+
 Date.prototype.addHours = function(h) {
     this.setHours(this.getHours() + h);
     return this;
@@ -29,7 +31,36 @@ const create =(req, res)=>{
     res.json({status:200,msg:'exhibition created'})
 }
 
-
+const addStores =async (req,res)=>{
+    let emails = req.body.email; //可以是array
+    let exhibitName = req.body.name.trim();
+    
+    if(Array.isArray(emails)){
+        emails.forEach(function(em){
+            Store.findOne({email:em},async function(err,store){
+                if(err){
+                    console.log('addStore store.find error');
+                    res.json({status:400, msg:'addStore store.find error'})
+                    return;
+                }else{
+                    await Exhibit.updateOne({name:exhibitName},{$push:{allStores:store}});
+                    
+                }
+            })
+        });
+    }else{
+        Store.findOne({email:emails},async function(err,store){
+            if(err){
+                console.log('addStore store.find error');
+                return;
+            }else{
+               console.log(store);
+                await Exhibit.updateOne({name:exhibitName},{$push:{allStores:store}})
+            }
+        })
+    }
+    res.json({status:200, msg:'store added to exhibition'});
+}
 
 const remove = (req,res)=>{
     let name = req.body.name;
@@ -138,6 +169,23 @@ const getAllPostsLength= (req,res)=>{
         }
     })
 }
+const getDate=(req,res)=>{
+    let name = req.query.name;
+    Exhibit.findOne({name:name},function(err,ex){
+        if(err){
+            console.log('getDate error '+ err);
+            return;
+        }else if(!ex){
+            console.log('exhibition invalid');
+            res.json({status:400,msg:'exhibition invalid'});
+            return;
+        }
+        else{
+            console.log('getDate');
+            res.json({status:200, msg:{start:ex.start, end:ex.end}});
+        }
+    })
+}
 
 module.exports = {
     create,
@@ -147,5 +195,7 @@ module.exports = {
     update,
     getAllPosts,
     getAllPostsLength,
-    getNamesAndAddress
+    getNamesAndAddress,
+    addStores,
+    getDate
 }
