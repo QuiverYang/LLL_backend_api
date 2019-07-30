@@ -99,7 +99,7 @@ const sendPassword = async(req, res, next) => {
     });
 };
 
-const sendSystemEmail = (req, res, next, to, subject, text, html, verifyNum, sendVerifyNumTime) => {
+const sendSystemEmail = (req, res, next, to, subject, text, html) => {
     let transporter = nodemailer.createTransport({
         service: 'Gmail',
         auth: {
@@ -122,22 +122,53 @@ const sendSystemEmail = (req, res, next, to, subject, text, html, verifyNum, sen
     transporter.sendMail(options, (error, info) => {
         if(error)  {
             console.log('發送信件錯誤：' + error);
-            res.json({status: 400, verifyNum: '-1', sendVerifyNumTime: '-1', serverMsg: '400, bad Request,, send forget psw verify email failure.', clientMsg: '連線異常，請重新嘗試'});
+            res.json({status: 400, serverMsg: '400, bad Request,, send forget psw verify email failure.', clientMsg: '連線異常，請重新嘗試'});
             return; 
         }
         if(!info)  {
             console.log('發送信件錯誤，找不到info');
-            res.json({status: 400, verifyNum: '-1', sendVerifyNumTime: '-1', serverMsg: '400, bad Request,, send forget psw verify email failure.', clientMsg: '連線異常，請重新嘗試'});
+            res.json({status: 400, serverMsg: '400, bad Request,, send forget psw verify email failure.', clientMsg: '連線異常，請重新嘗試'});
             return;
         }
         console.log('發送信件成功' + info.response);
-        res.json({status: 200, verifyNum: verifyNum, sendVerifyNumTime: sendVerifyNumTime, serverMsg: '200, ok, send forget psw verify email success.', clientMsg: '驗證碼已發送至' + to});
+        res.json({status: 200, serverMsg: '200, ok, send forget psw verify email success.', clientMsg: '驗證碼已發送至' + to});
     });
-}
+};
+
+const sendFeedbackEmail = (req, res, next, to, subject, text, booth) => {
+    let transporter = nodemailer.createTransport({
+        service: 'Gmail',
+        auth: {
+            user: 'LeadLongLineBooth@gmail.com',
+            pass: 'qpalzm794613'
+        }
+    });
+    let options = {
+        from: booth.email,
+        to: to,
+        subject: subject,
+        text: text,
+    }
+    transporter.sendMail(options, (error, info) => {
+        if(error)  {
+            console.log('發送信件錯誤：' + error);
+            res.json({status: 400, serverMsg: '400, bad Request,, send feedback email failure.', clientMsg: '連線異常，請重新嘗試'});
+            return; 
+        }
+        if(!info)  {
+            console.log('發送信件錯誤，找不到info');
+            res.json({status: 400, serverMsg: '400, bad Request,, send feedback email failure.', clientMsg: '連線異常，請重新嘗試'});
+            return;
+        }
+        console.log('發送信件成功' + info.response);
+        res.json({status: 200, booth: booth, serverMsg: '200, ok, send feedback email success.', clientMsg: '提交成功'});
+    });
+};
 
 module.exports = {
     send,
     send2,
     sendPassword,
-    sendSystemEmail  //0723，忘記密碼發驗證信
+    sendSystemEmail,  //0723，忘記密碼發驗證信
+    sendFeedbackEmail   //0729，寄送回饋信件
 }

@@ -29,9 +29,19 @@ storeSchema.query.byPassword = function(password)  {
     return this.where({password: password});
 };
 
-//0728，利用Email和Password初始化展位資訊
-storeSchema.query.byEmailPsw = function(email, password)  {
-    return this.where({email: email, password: password});
+//0729，利用req.decoded.boothId做登入後的各種api
+storeSchema.query.byBoothId = function(boothId)  {
+    return this.where({_id: boothId});
+};
+
+//0729，利用req.decoded.boothId以及密碼去更換信箱
+storeSchema.query.byIdPsw = function(boothId, password)  {
+    return this.where({_id: boothId, password: password});
+};
+
+//0729，利用req.decoded.boothId去查找展位
+storeSchema.query.byId = function(boothId)  {
+    return this.where({_id: boothId});
 };
 
 storeSchema.query.byName = function(name)  {

@@ -2,6 +2,19 @@ const Store = require('../models/store');
 const emailController = require('../controllers/emailController');
 const nodemailer = require('nodemailer');
 
+const boothAdd = async(req, res, next) => {
+    let email = req.body.email;
+    Store.findOneAndUpdate({email: email}, {$set:{postTime: 3}}, {new: true}, function(err, booth)  {
+        console.log(email);
+        if(err || !booth)  {
+            res.json({status: 400, serverMsg: '400, bad request, reset password failed.', clientMsg: '連線異常，請重新嘗試'});
+            return;
+        }
+        console.log(booth);
+        res.json({status: 200, serverMsg: '200, ok, reset password success.', clientMsg: '密碼已重設，請使用新密碼登入'});
+    });
+}
+
 const sendVerifyNumEmail = async(req, res, next) => {
     let email = req.body.email;
     if(email == null || email == undefined)  {    //找不到信箱
@@ -54,7 +67,6 @@ const resetPassword = async(req, res, next) => {
         res.json({status: 404, serverMsg: '404, not found, password contains english and num.', clientMsg: '密碼需同時包含英文與數字'});
         return;
     }
-    
     Store.findOneAndUpdate({email: email}, {$set:{password: etInputNewPsw}}, {new: true}, function(err, booth)  {
         console.log(email);
         if(err || !booth)  {
@@ -102,6 +114,9 @@ const checkIfPswContainEnglishAndNum = (etInputNewPsw) => {
 };
 
 module.exports = {
+    boothAdd,
     sendVerifyNumEmail,
-    resetPassword
+    resetPassword,
+    checkPswFormatValid,
+    checkIfPswContainEnglishAndNum
 }

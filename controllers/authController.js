@@ -93,11 +93,11 @@ const checkTokenForAdmin = (req,res,next)=>{
 const boothLogin = async(req, res, next) => {
     //先利用帳密確認使用者是哪個展位的
     //帳密是否都有輸入
-    if(req.body.email.trim().length == 0 && req.body.password.trim().length == 0)  {    //帳號與密碼皆為空
+    if(req.body.email.trim().length == 0 && req.body.password.trim().length == 0)  {    //信箱與密碼皆為空
         res.json({status: 404, serverMsg: '404, not found, booth login lack account and password.', clientMsg: '請輸入帳號與密碼'});
         return; 
     }
-    if(req.body.email.trim().length == 0 && req.body.password.trim().length != 0)  {    //帳號為空
+    if(req.body.email.trim().length == 0 && req.body.password.trim().length != 0)  {    //信箱為空
         res.json({status: 404, serverMsg: '404, not found, booth login lack account.', clientMsg: '請輸入帳號'});
         return; 
     }
@@ -134,7 +134,7 @@ const boothLogin = async(req, res, next) => {
 
 //0723，當帳密、效期都正確，就給展位端一個token
 const getBoothToken = (exhibition, booth, req, res, next) => {
-    let token = jwt.sign({BoothId: booth._id}, config.jwtSalt, {
+    let token = jwt.sign({boothId: booth._id}, config.jwtSalt, {
         expiresIn: Math.round((exhibition[0].end.getTime() - new Date().getTime())/1000) //秒為單位
     });
     if(token == undefined || token == null)  {

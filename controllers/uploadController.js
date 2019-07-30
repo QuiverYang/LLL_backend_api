@@ -11,6 +11,17 @@ const uploadStorePic = (req,res,next)=>{
     }
 }
 
+const uploadBoothAvatar = (req, res, next) => {
+    if(!req.file){
+        res.json({status: 400, msg: 'Bad request'});
+    }else{
+        let filePath = config.urlRootCharlotte31228 + req.file.originalname;
+        res.json({status: 200, filePath: filePath, msg:'200'});
+    }
+}
+
+
 module.exports = {
-    uploadStorePic
+    uploadStorePic,
+    uploadBoothAvatar
 }

@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const boothController = require('../controllers/boothController');
 
+//leadline/booth/boothAdd  忘記密碼
+router.post('/boothAdd',boothController.boothAdd);
+
 //leadline/booth/sendForgetPswEmail  忘記密碼
 router.post('/sendVerifyNumEmail',boothController.sendVerifyNumEmail);
 
