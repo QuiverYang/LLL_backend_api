@@ -3,6 +3,9 @@ const queue = new QueueWay();
 const Store = require('../models/store');
 var StoreSchema = require('mongoose').model('Store').schema;
 const Exhibit = require('../models/exhibition');
+const User = require('../models/user'); 
+const UserQueue = require('../models/userqueue');
+const Queue = require('../models/queue');
 const OldExhibit = require('../models/old_exhibition');
 const mongoose = require('mongoose');
 
@@ -55,9 +58,75 @@ const d = (req,res)=>{
     })
     
 }
+const createUser =  async (req, res, next)=>{
+    let exhibitionName = req.query.exhibitionName
+    if(exhibitionName === undefined){
+        console.log('currentExhibit hasn\'t been inputed');
+        return;
+    }
+    let stores = await Store.findByCurrentExhibition(exhibitionName);
+    
+    for(let i=0;i<3;i++){
+        let a = 'a'+i;
+        let name = a;
+        let email = a+'@gmail.com';
+        
+        let user = new User({
+            name: name,
+            email:email,
+            auth:true
+        });
+        user.save().then(() =>{
+            console.log('create success');
+        } );
+
+        let r = Math.floor(Math.random()*stores.length)
+        let store = stores[r];
+        let storeEmail = stores[r].email;
+        let myNum = r;
+        let userqueue = new UserQueue({
+            myNum : myNum,
+            store : store
+        });
+        await userqueue.save();
+    
+        User.updateOne({email:email},{$push:{ line : userqueue }},function(error, result){
+            if(error){
+                console.log(error)
+            }else{
+                Queue.updateOne({_id:store.queue._id},{$push:{visitor:user},$inc:{total:1}},function(error, result){
+                    if(error){
+                        console.log(error)
+                    }else{
+                        let date = '2019/7/30'
+                        let hour = Math.floor(Math.random()*9+9)
+                        let min = Math.floor(Math.random()*60)
+                        let sec = Math.floor(Math.random()*60)
+                        let time = date+' '+hour+':'+min+':'+sec
+                        Store.updateOne({email:storeEmail},{$push:{visitorTime:time}},function(error){
+                            if(error){
+                                console.log(error);
+                            }else{
+                                console.log('user and store added queue data');
+                            }
+                        });
+                        
+                    }
+                })
+            }
+            
+        });
+    }
+    res.json({status:200, msg:'user and store added queue data'});
+    // let password = req.body.password;
+    // let birthday = req.body.birthday;
+    // let phone = req.body.phone;
+    // let gender = req.body.gender;
+}
 module.exports = {
     a,
     b,
     c,
-    d
+    d,
+    createUser
 }

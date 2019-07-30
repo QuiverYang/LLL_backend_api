@@ -8,7 +8,7 @@ router.get('/getAllExhibitName',exhibitionController.getAllExhibitName);
 //leadline/exhibition/getExhibitionSchema
 router.get('/getExhibitionSchema',exhibitionController.getExhibitionSchema);
 
-//leadlin/exhibition/create 新增展覽
+//leadline/exhibition/create 新增展覽
 router.post('/create',exhibitionController.create);
 
 //leadline/exhibition/update
@@ -23,7 +23,7 @@ router.get('/getAllPosts',exhibitionController.getAllPosts);
 //leadline/exhibition/getAllPostsLength
 router.get('/getAllPostsLength',exhibitionController.getAllPostsLength);
 
-//leadlin/exhibition/getNamesAndAddress
+//leadline/exhibition/getNamesAndAddress
 router.get('/getNamesAndAddress',exhibitionController.getNamesAndAddress);
 
 router.put('/addStores',exhibitionController.addStores);
