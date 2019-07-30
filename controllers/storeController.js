@@ -173,14 +173,15 @@ const getPassword = async (req,res)=>{
 
 const dumpStoreExhibit = async (req,res)=>{
     let currentEx = req.body.exhibitionName;
-    Store.find({currentExhibit:currentEx},async function(err, stores){
+    Store.findOne({currentExhibit:currentEx},async function(err, stores){
         if(err){
             console.log('dumpStoreExhibit error');
             console.log(err);
             res.send('dumpStoreExhibit error')
             return
         }else if(stores){
-            for(let i = 0; i < stores.length; i++){
+            console.log(stores);
+            // for(let i = 0; i < stores.length; i++){
                 
                 let historyVisitorTime = stores[i].visitorTime;
                 let historyQueue = stores[i].queue;
@@ -193,7 +194,7 @@ const dumpStoreExhibit = async (req,res)=>{
                 })
                 stores[i].history.push(history);
                 stores[i].save();
-            }
+            // }
             console.log(stores);
             console.log('dumpStoreExhibit');
             res.send('dump stores visitorTime, queue and post');
