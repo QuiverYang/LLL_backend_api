@@ -108,9 +108,7 @@ const addVisitor = async(req,res)=>{
             })
         }
         
-    });
-    
-    
+    });  
 }
 const test = (req,res)=>{
     res.send('queue test');
