@@ -9,9 +9,7 @@ exhibitionSchema = new Schema({
     address:String,
     //預設回傳一個 UTC + 0 的 Date
     allPosts:[{type:Schema.Types.ObjectId, ref: 'Message',default:[]}],
-    allStores:[{type:Schema.Types.ObjectId, ref: 'Store',default:[]}],
-    
 });
 
-module.exports = mongoose.model('Exhibition',exhibitionSchema,);
+module.exports = mongoose.model('Old_Exhibition',exhibitionSchema,);
 

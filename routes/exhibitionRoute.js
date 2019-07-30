@@ -26,4 +26,8 @@ router.get('/getAllPostsLength',exhibitionController.getAllPostsLength);
 //leadlin/exhibition/getNamesAndAddress
 router.get('/getNamesAndAddress',exhibitionController.getNamesAndAddress);
 
+router.put('/addStores',exhibitionController.addStores);
+
+//leadline/exhibition/getDate 拿到start and end的日期
+router.get('/getDate',exhibitionController.getDate);
 module.exports = router;

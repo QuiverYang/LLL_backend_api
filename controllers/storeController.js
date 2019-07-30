@@ -6,6 +6,7 @@ const emailController = require('../controllers/emailController');
 const StoreSchema = require('mongoose').model('Store').schema;
 const Message = require('../models/message');
 const Exhibition = require('../models/exhibition');
+const History = require('../models/history');
 
 
 const create = async (req, res)=>{
@@ -170,10 +171,37 @@ const getPassword = async (req,res)=>{
     }
 }
 
-const clearStoreExhibit = async (req,res)=>{
-    await Store.updateMany({},{$set:{currentExhibit:''}});
-    console.log('clear stores exhibition info')
-    res.send('clear stores exhibition info');
+const dumpStoreExhibit = async (req,res)=>{
+    let currentEx = req.body.exhibitionName;
+    Store.find({currentExhibit:currentEx},async function(err, stores){
+        if(err){
+            console.log('dumpStoreExhibit error');
+            console.log(err);
+            res.send('dumpStoreExhibit error')
+            return
+        }else if(stores){
+            for(let i = 0; i < stores.length; i++){
+                
+                let historyVisitorTime = stores[i].visitorTime;
+                let historyQueue = stores[i].queue;
+                let historyPost = stores[i].post;
+                let history = await History.create({
+                    date: new Date(),
+                    historyVisitorTime:[historyVisitorTime],
+                    historyPost:historyPost,
+                    historyQueue:historyQueue
+                })
+                stores[i].history.push(history);
+                stores[i].save();
+            }
+            console.log(stores);
+            console.log('dumpStoreExhibit');
+            res.send('dump stores visitorTime, queue and post');
+        }else{
+            console.log('dumpStoreExhibit');
+            res.send('invalid exhibitionName');
+        }
+    })
 }
 
 const remove = async(req,res)=>{
@@ -209,9 +237,14 @@ const getQueueInfo = async (req,res)=>{
     
     for(let i = 0; i < stores.length; i++){
         let obj = {}
+        let total = stores[i].queue.total;
+        let currentNum = stores[i].queue.current;
+        let vt =[];
         obj.name = stores[i].name;
         obj.email = stores[i].email;
-        let vt =[];
+        obj.boothNo = stores[i].boothNo;
+        obj.inlineNum = total-currentNum;
+        obj.totalQueueNum = total;
         for(let j = openTime; j <=closeTime; j++){
             vt[j-openTime]={時間:j,人數:0};
         }
@@ -229,32 +262,6 @@ const getQueueInfo = async (req,res)=>{
     res.json({status:200,msg:infos});  
 }
 
-const getQueueInfo2 = async (req,res)=>{
-    let currentExhibit = req.query.name;
-    let stores = await Store.find({currentExhibit:currentExhibit}).populate({
-        path: 'queue',
-        populate: {
-          path: 'visitor', 
-        }
-      })
-    let infos = [];
-    //   required info schema:
-    //   [{name:name,email:email,boothNo:boothNo,inlineNum:inlineNum, totalQueueNum: totalQueueNum},{},{}......]
-    let obj = {};
-    stores.forEach(function(store,index,arr){
-        obj={}
-        obj.name = store.name;
-        obj.email = store.email;
-        obj.boothNo = store.boothNo;
-        let total = store.queue.total;
-        let currentNum = store.queue.current;
-        obj.inlineNum = total-currentNum;
-        obj.totalQueueNum = total;
-        infos.push(obj);
-    })
-    console.log('getQueueInfo2')
-    res.json({status:200,msg:infos});  
-}
 
 module.exports = {
     create,
@@ -262,11 +269,10 @@ module.exports = {
     updateStore,
     getAllStores,
     getPassword,
-    clearStoreExhibit,
+    dumpStoreExhibit,
     searchStores,
     remove,
     getStoreSchema,
     getQueueInfo,
-    getQueueInfo2,
     addPost,
 }
