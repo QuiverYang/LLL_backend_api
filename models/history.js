@@ -5,8 +5,8 @@ const Schema = mongoose.Schema;
 historySchema = new Schema({
     date:{type:Date, default: new Date()},
     historyVisitorTime:[],
-    historyPost:[{type:Schema.Types.ObjectId, ref: 'Message',default:[]}],
-    historyQueue:[{type:Schema.Types.ObjectId, ref: 'Queue',default:[]}]
+    historyPost:[],
+    historyQueue:{type:Schema.Types.ObjectId, ref:'Queue', default:null},
 });
 
 module.exports = mongoose.model('History',historySchema,);

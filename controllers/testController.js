@@ -8,11 +8,14 @@ const UserQueue = require('../models/userqueue');
 const Queue = require('../models/queue');
 const OldExhibit = require('../models/old_exhibition');
 const mongoose = require('mongoose');
+const History = require('../models/history');
+
 
 const a = (req,res)=>{
-    let ISODate = new Date();
-    let temp = ISODate.setHours(ISODate.getHours()+20);
-    res.json({time:ISODate});
+    let date = new Date(req.query.date);
+    let today = new Date();
+    let same = date.getDate()===today.getDate();
+    res.json({time:same});
 }
 const b =(req,res)=>{
     let name = req.body.name;
@@ -62,13 +65,14 @@ const d = (req,res)=>{
 }
 const createUser =  async (req, res, next)=>{
     let exhibitionName = req.query.exhibitionName
+    console.log(exhibitionName);
     if(exhibitionName === undefined){
         console.log('currentExhibit hasn\'t been inputed');
         return;
     }
     let stores = await Store.findByCurrentExhibition(exhibitionName);
     
-    for(let i=0;i<100;i++){
+    for(let i=0;i<20;i++){
         let a = 'a'+i;
         let name = a;
         let email = a+'@gmail.com';
@@ -127,16 +131,15 @@ const createUser =  async (req, res, next)=>{
 }
 
 const dumpStoreExhibit = async (req,res)=>{
+    let date = new Date(req.body.date);
     let currentEx = req.body.exhibitionName;
-    Store.findOne({currentExhibit:currentEx},async function(err, stores){
+    Store.find({currentExhibit:currentEx},async function(err, stores){
         if(err){
             console.log('dumpStoreExhibit error');
             console.log(err);
             res.send('dumpStoreExhibit error')
             return
         }else if(stores){
-            let TPEtime = new Date();
-            TPEtime.setHours(TPEtime.getHours()+8);
             for(let i = 0; i < stores.length; i++){
                 
                 let historyVisitorTime = stores[i].visitorTime;
@@ -144,11 +147,16 @@ const dumpStoreExhibit = async (req,res)=>{
                 let historyPost = stores[i].post;
                 
                 let history = await History.create({
-                    date: TPEtime,
+                    date: date,
                     historyVisitorTime:[historyVisitorTime],
                     historyPost:historyPost,
                     historyQueue:historyQueue
                 })
+                await history.save();
+                if(stores[i].history === undefined){
+                    stores[i].history = [];
+                }
+                stores[i].history.push(history);
                 let queue = await Queue.create({
                     exhibitionName:currentEx,
                     storeName : stores.name,
@@ -156,14 +164,16 @@ const dumpStoreExhibit = async (req,res)=>{
                     total: 0,
                     visitor: []
                 })
-                stores[i] = queue;
-                stores[i].history.push(history);
+                stores[i].queue = queue;
+                stores[i].visitorTime = [];
+                stores[i].post=[];
+                
                 stores[i].save();
             }
             console.log('dumpStoreExhibit');
             res.send('dump stores visitorTime, queue and post');
         }else{
-            console.log('dumpStoreExhibit');
+            console.log('invalid dumpStoreExhibit');
             res.send('invalid exhibitionName');
         }
     })

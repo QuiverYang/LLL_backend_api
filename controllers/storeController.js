@@ -231,8 +231,9 @@ const dumpStoreExhibit = async (req,res)=>{
                 let historyPost = stores[i].post;
                 
                 let history = await History.create({
-                    date: TPEtime,
-                    historyVisitorTime:[historyVisitorTime],
+                    // date: TPEtime,
+                    date: new Date("2019-07-30"),
+                    historyVisitorTime:historyVisitorTime,
                     historyPost:historyPost,
                     historyQueue:historyQueue
                 })
@@ -281,43 +282,104 @@ const getStoreSchema = (req,res)=>{
 }
 
 const getQueueInfo = async (req,res)=>{
+    //req.query.date格式要是2019-01-01
+    let date = new Date(req.query.date);
     let currentExhibit = req.query.name;
-    let stores = await Store.find({currentExhibit:currentExhibit}).populate({
+    let today = new Date();
+    let sameDate = date.getDate()===today.getDate();
+    console.log('same: '+sameDate);
+    let stores = await Store.find({currentExhibit:currentExhibit})
+    .populate({
         path: 'queue',
         populate: {
           path: 'visitor', 
         }
       })
+    .populate({
+        path:'history',
+        populate:{
+            path:'historyPost historyQueue'
+        }
+      })
+    //   console.log(stores);
     let infos = [];
     //讓vt初始化為8-18的數字組
     const openTime = 8;
     const closeTime = 18;
-    
-    for(let i = 0; i < stores.length; i++){
-        let obj = {}
-        let total = stores[i].queue.total;
-        let currentNum = stores[i].queue.current;
-        let vt =[];
-        obj.name = stores[i].name;
-        obj.email = stores[i].email;
-        obj.boothNo = stores[i].boothNo;
-        obj.inlineNum = total-currentNum;
-        obj.totalQueueNum = total;
-        for(let j = openTime; j <=closeTime; j++){
-            vt[j-openTime]={時間:j,人數:0};
+    if(sameDate){
+        for(let i = 0; i < stores.length; i++){
+            let obj = {}
+            let total = stores[i].queue.total;
+            let currentNum = stores[i].queue.current;
+            let vt =[];
+            obj.name = stores[i].name;
+            obj.email = stores[i].email;
+            obj.boothNo = stores[i].boothNo;
+            obj.inlineNum = total-currentNum;
+            obj.totalQueueNum = total;
+            for(let j = openTime; j <=closeTime; j++){
+                vt[j-openTime]={時間:j,人數:0};
+            }
+            for(let j = 0; j < stores[i].visitorTime.length; j++){
+                let key = new Date(stores[i].visitorTime[j]).getHours();
+                // console.log(key)//這裡的key是local hour
+                if(key>=openTime && key<=closeTime){
+                    vt[key-openTime]['人數']++;
+                }
+            }
+            obj.timeAndVisitor = vt;
+            infos.push(obj);
         }
-        for(let j = 0; j < stores[i].visitorTime.length; j++){
-            let key = new Date(stores[i].visitorTime[j]).getHours();
-            // console.log(key)//這裡的key是local hour
-            if(key>=openTime && key<=closeTime){
-                vt[key-openTime]['人數']++;
+    }else{
+        for(let i = 0; i < stores.length; i++){
+            for(let j = 0; j < stores[i].history.length; j++){
+                let obj ={};
+                if(date.getDate()===stores[i].history[j].date.getDate()){
+                    console.log(stores[i].name);
+                    console.log('j: '+ j);
+                    console.log(stores[i].history[j]);
+                    let total = stores[i].history[j].historyQueue.total;
+                    let currentNum = stores[i].history[j].historyQueue.current;
+                    let vt = [];
+                    obj.name = stores[i].name;
+                    obj.email = stores[i].email;
+                    obj.boothNo = stores[i].boothNo;
+                    obj.inlineNum = total-currentNum;
+                    obj.totalQueueNum = total;
+                    for(let k = openTime; k <=closeTime; k++){
+                        vt[k-openTime]={時間:k,人數:0};
+                    }
+                    for(let k = 0; k < stores[i].history[j].historyVisitorTime.length; k++){
+                        let key = new Date(stores[i].history[j].historyVisitorTime[k]).getHours();
+                        // console.log(key)//這裡的key是local hour
+                        if(key>=openTime && key<=closeTime){
+                            vt[key-openTime]['人數']++;
+                        }
+                    }
+                    obj.timeAndVisitor = vt;
+                    infos.push(obj);
+                    break;
+                }
             }
         }
-        obj.timeAndVisitor = vt;
-        infos.push(obj);
     }
+    
     console.log('getQueueInfo')
     res.json({status:200,msg:infos});  
+    // res.json({status:200,msg:stores});  
+}
+const clearHistory = (req,res)=>{
+
+    Store.updateMany({currentExhibit:'期末專題展'},{$set:{history:[]}},function(err){
+        if(err){
+            console.log(err);
+            res.json({err:err});
+            return;
+        }
+    });
+    console.log('clearHistory');
+    res.json('clearHistory')
+
 }
 
 
@@ -334,5 +396,6 @@ module.exports = {
     getStoreSchema,
     getQueueInfo,
     addPost,
+    clearHistory,
     
 }
