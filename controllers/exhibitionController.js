@@ -7,14 +7,15 @@ Date.prototype.addHours = function(h) {
     return this;
 };
 
-const create =(req, res)=>{
+const create =async (req, res)=>{
     let name = req.body.name;
     let start = req.body.start;
     let end = req.body.end;
     let address = req.body.address;
     let url = req.body.url;
-    console.log('start: '+ start);
-    console.log('end '+ end);
+    // console.log('url: ' + url)
+    // console.log('start: '+ start);
+    // console.log('end '+ end);
     if(name === undefined || start === undefined || end ===undefined || address === undefined || url === undefined){
         console.log('missing input form exhibition create');
         res.send('missing input form exhibition create');

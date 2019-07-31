@@ -125,10 +125,55 @@ const createUser =  async (req, res, next)=>{
     // let phone = req.body.phone;
     // let gender = req.body.gender;
 }
+
+const dumpStoreExhibit = async (req,res)=>{
+    let currentEx = req.body.exhibitionName;
+    Store.findOne({currentExhibit:currentEx},async function(err, stores){
+        if(err){
+            console.log('dumpStoreExhibit error');
+            console.log(err);
+            res.send('dumpStoreExhibit error')
+            return
+        }else if(stores){
+            let TPEtime = new Date();
+            TPEtime.setHours(TPEtime.getHours()+8);
+            for(let i = 0; i < stores.length; i++){
+                
+                let historyVisitorTime = stores[i].visitorTime;
+                let historyQueue = stores[i].queue;
+                let historyPost = stores[i].post;
+                
+                let history = await History.create({
+                    date: TPEtime,
+                    historyVisitorTime:[historyVisitorTime],
+                    historyPost:historyPost,
+                    historyQueue:historyQueue
+                })
+                let queue = await Queue.create({
+                    exhibitionName:currentEx,
+                    storeName : stores.name,
+                    current : 0,
+                    total: 0,
+                    visitor: []
+                })
+                stores[i] = queue;
+                stores[i].history.push(history);
+                stores[i].save();
+            }
+            console.log('dumpStoreExhibit');
+            res.send('dump stores visitorTime, queue and post');
+        }else{
+            console.log('dumpStoreExhibit');
+            res.send('invalid exhibitionName');
+        }
+    })
+}
+
 module.exports = {
     a,
     b,
     c,
     d,
-    createUser
+    createUser,
+    dumpStoreExhibit
 }

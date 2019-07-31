@@ -7,5 +7,6 @@ router.post('/b',testController.b);
 router.post('/c',testController.c);
 router.post('/d',testController.d);
 router.get('/createUser',testController.createUser);
+router.put('/dumpStoreExhibit',testController.dumpStoreExhibit);
 
 module.exports = router;

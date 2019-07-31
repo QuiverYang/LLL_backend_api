@@ -215,24 +215,31 @@ const dumpOneStoreExhibit = async (req,res)=>{
 
 const dumpStoreExhibit = async (req,res)=>{
     let currentEx = req.body.exhibitionName;
-    Store.findOne({currentExhibit:currentEx},async function(err, stores){
+    Store.find({currentExhibit:currentEx},async function(err, stores){
         if(err){
             console.log('dumpStoreExhibit error');
             console.log(err);
             res.send('dumpStoreExhibit error')
             return
         }else if(stores){
+            let TPEtime = new Date();
+            TPEtime.setHours(TPEtime.getHours()+8);
             for(let i = 0; i < stores.length; i++){
                 
                 let historyVisitorTime = stores[i].visitorTime;
                 let historyQueue = stores[i].queue;
                 let historyPost = stores[i].post;
+                
                 let history = await History.create({
-                    date: new Date(),
+                    date: TPEtime,
                     historyVisitorTime:[historyVisitorTime],
                     historyPost:historyPost,
                     historyQueue:historyQueue
                 })
+                if(stores[i].history === undefined){
+                    stores[i].history = [];
+                }
+                stores[i].history.push(history);
                 let queue = await Queue.create({
                     exhibitionName:currentEx,
                     storeName : stores.name,
@@ -240,14 +247,16 @@ const dumpStoreExhibit = async (req,res)=>{
                     total: 0,
                     visitor: []
                 })
-                stores[i] = queue;
-                stores[i].history.push(history);
+                stores[i].queue = queue;
+                stores[i].visitorTime = [];
+                stores[i].post=[];
+                
                 stores[i].save();
             }
             console.log('dumpStoreExhibit');
             res.send('dump stores visitorTime, queue and post');
         }else{
-            console.log('dumpStoreExhibit');
+            console.log('invalid dumpStoreExhibit');
             res.send('invalid exhibitionName');
         }
     })
