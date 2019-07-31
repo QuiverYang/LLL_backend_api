@@ -32,10 +32,20 @@ router.get('/getStoreSchema',storeController.getStoreSchema);
 //leadline/store/getQueueInfo 拿到店家排隊資訊並返回資料
 router.get('/getQueueInfo',storeController.getQueueInfo);
 
+<<<<<<< HEAD
 //leadline/store/getQueueInfo2 拿到店家排隊資訊並返回
 router.get('/getQueueInfo2',storeController.getQueueInfo2);
 
 //leadline/store/addPost
 router.put('/addPost',storeController.addPost);
 
+=======
+//leadline/store/addPost
+router.put('/addPost',storeController.addPost);
+
+//leadline/store/clearHistory
+router.put('/clearHistory',storeController.clearHistory);
+
+
+>>>>>>> master
 module.exports = router;

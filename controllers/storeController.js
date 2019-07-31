@@ -150,6 +150,96 @@ const clearStoreExhibit = async (req,res)=>{
     await Store.updateMany({},{$set:{currentExhibit:''}});
     console.log('clear stores exhibition info')
     res.send('clear stores exhibition info');
+const dumpOneStoreExhibit = async (req,res)=>{
+    let email = req.body.email;
+    let currentEx = req.body.exhibitionName;
+    Store.findOne({email:email},async function(err, stores){
+        if(err){
+            console.log('dumpOneStoreExhibit error');
+            console.log(err);
+            res.send('dumpOneStoreExhibit error')
+            return
+        }else if(stores){
+                let historyVisitorTime = stores.visitorTime;
+                let historyQueue = stores.queue;
+                let historyPost = stores.post;
+                let TPEtime = new Date();
+                TPEtime.setHours(TPEtime.getHours()+8);
+                let history = await History.create({
+                    date: TPEtime,
+                    historyVisitorTime:[historyVisitorTime],
+                    historyPost:historyPost,
+                    historyQueue:historyQueue
+                })
+                stores.history.push(history);
+                let queue = await Queue.create({
+                    exhibitionName:currentEx,
+                    storeName : stores.name,
+                    current : 0,
+                    total: 0,
+                    visitor: []
+                })
+                stores.queue = queue;
+                stores.visitorTime = [];
+                stores.post=[];
+                stores.save();
+            console.log('dumpOneStoreExhibit');
+            res.send('dump stores visitorTime, queue and post');
+        }else{
+            console.log('dumpOneStoreExhibit');
+            res.send('invalid exhibitionName');
+        }
+    })
+}
+
+const dumpStoreExhibit = async (req,res)=>{
+    let currentEx = req.body.exhibitionName;
+    Store.find({currentExhibit:currentEx},async function(err, stores){
+        if(err){
+            console.log('dumpStoreExhibit error');
+            console.log(err);
+            res.send('dumpStoreExhibit error')
+            return
+        }else if(stores){
+            let TPEtime = new Date();
+            TPEtime.setHours(TPEtime.getHours()+8);
+            for(let i = 0; i < stores.length; i++){
+                
+                let historyVisitorTime = stores[i].visitorTime;
+                let historyQueue = stores[i].queue;
+                let historyPost = stores[i].post;
+                
+                let history = await History.create({
+                    // date: TPEtime,
+                    date: new Date("2019-07-30"),
+                    historyVisitorTime:historyVisitorTime,
+                    historyPost:historyPost,
+                    historyQueue:historyQueue
+                })
+                if(stores[i].history === undefined){
+                    stores[i].history = [];
+                }
+                stores[i].history.push(history);
+                let queue = await Queue.create({
+                    exhibitionName:currentEx,
+                    storeName : stores.name,
+                    current : 0,
+                    total: 0,
+                    visitor: []
+                })
+                stores[i].queue = queue;
+                stores[i].visitorTime = [];
+                stores[i].post=[];
+                
+                stores[i].save();
+            }
+            console.log('dumpStoreExhibit');
+            res.send('dump stores visitorTime, queue and post');
+        }else{
+            console.log('invalid dumpStoreExhibit');
+            res.send('invalid exhibitionName');
+        }
+    })
 }
 
 const remove = async(req,res)=>{
@@ -171,38 +261,106 @@ const getStoreSchema = (req,res)=>{
 }
 
 const getQueueInfo = async (req,res)=>{
+    //req.query.date格式要是2019-01-01
+    let date = new Date(req.query.date);
     let currentExhibit = req.query.name;
-    let stores = await Store.find({currentExhibit:currentExhibit}).populate({
+    let today = new Date();
+    let sameDate = date.getDate()===today.getDate();
+    console.log('same: '+sameDate);
+    let stores = await Store.find({currentExhibit:currentExhibit})
+    .populate({
         path: 'queue',
         populate: {
           path: 'visitor', 
         }
       })
+    .populate({
+        path:'history',
+        populate:{
+            path:'historyPost historyQueue'
+        }
+      })
+    //   console.log(stores);
     let infos = [];
     //讓vt初始化為8-18的數字組
     const openTime = 8;
     const closeTime = 18;
     
-    for(let i = 0; i < stores.length; i++){
-        let obj = {}
-        obj.name = stores[i].name;
-        obj.email = stores[i].email;
-        let vt =[];
-        for(let j = openTime; j <=closeTime; j++){
-            vt[j-openTime]={時間:j,人數:0};
+    
+    if(sameDate){
+        for(let i = 0; i < stores.length; i++){
+            let obj = {}
+            let total = stores[i].queue.total;
+            let currentNum = stores[i].queue.current;
+            let vt =[];
+            obj.name = stores[i].name;
+            obj.email = stores[i].email;
+            obj.boothNo = stores[i].boothNo;
+            obj.inlineNum = total-currentNum;
+            obj.totalQueueNum = total;
+            for(let j = openTime; j <=closeTime; j++){
+                vt[j-openTime]={時間:j,人數:0};
+            }
+            for(let j = 0; j < stores[i].visitorTime.length; j++){
+                let key = new Date(stores[i].visitorTime[j]).getHours();
+                // console.log(key)//這裡的key是local hour
+                if(key>=openTime && key<=closeTime){
+                    vt[key-openTime]['人數']++;
+                }
+            }
+            obj.timeAndVisitor = vt;
+            infos.push(obj);
         }
-        for(let j = 0; j < stores[i].visitorTime.length; j++){
-            let key = new Date(stores[i].visitorTime[j]).getHours();
-            // console.log(key)//這裡的key是local hour
-            if(key>=openTime && key<=closeTime){
-                vt[key-openTime]['人數']++;
+    }else{
+        for(let i = 0; i < stores.length; i++){
+            for(let j = 0; j < stores[i].history.length; j++){
+                let obj ={};
+                if(date.getDate()===stores[i].history[j].date.getDate()){
+                    console.log(stores[i].name);
+                    console.log('j: '+ j);
+                    console.log(stores[i].history[j]);
+                    let total = stores[i].history[j].historyQueue.total;
+                    let currentNum = stores[i].history[j].historyQueue.current;
+                    let vt = [];
+                    obj.name = stores[i].name;
+                    obj.email = stores[i].email;
+                    obj.boothNo = stores[i].boothNo;
+                    obj.inlineNum = total-currentNum;
+                    obj.totalQueueNum = total;
+                    for(let k = openTime; k <=closeTime; k++){
+                        vt[k-openTime]={時間:k,人數:0};
+                    }
+                    for(let k = 0; k < stores[i].history[j].historyVisitorTime.length; k++){
+                        let key = new Date(stores[i].history[j].historyVisitorTime[k]).getHours();
+                        // console.log(key)//這裡的key是local hour
+                        if(key>=openTime && key<=closeTime){
+                            vt[key-openTime]['人數']++;
+                        }
+                    }
+                    obj.timeAndVisitor = vt;
+                    infos.push(obj);
+                    break;
+                }
             }
         }
-        obj.timeAndVisitor = vt;
-        infos.push(obj);
     }
+    
     console.log('getQueueInfo')
     res.json({status:200,msg:infos});  
+    // res.json({status:200,msg:stores});  
+}
+const clearHistory = (req,res)=>{
+
+    Store.updateMany({currentExhibit:'期末專題展'},{$set:{history:[]}},function(err){
+        if(err){
+            console.log(err);
+            res.json({err:err});
+            return;
+        }
+    });
+    console.log('clearHistory');
+    res.json('clearHistory')
+
 }
 
 const getQueueInfo2 = async (req,res)=>{
@@ -245,4 +403,6 @@ module.exports = {
     getQueueInfo,
     getQueueInfo2,
     addPost,
+    clearHistory,
+    
 }
