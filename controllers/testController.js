@@ -18,10 +18,8 @@ const a = (req,res)=>{
     res.json({time:same});
 }
 const b =(req,res)=>{
-    let name = req.body.name;
-    let password = req.body.password;
-    res.json({status:1, msg:{name:name,password:'1234'}});
-    return;
+    console.log(req.body.date);
+    res.json({date:req.body.date})
 }
 const c =(req,res)=>{
     Exhibit.find(function(err, docs) {
@@ -71,8 +69,9 @@ const createUser =  async (req, res, next)=>{
         return;
     }
     let stores = await Store.findByCurrentExhibition(exhibitionName);
+    let users = [];
     
-    for(let i=0;i<20;i++){
+    for(let i=0;i<3;i++){
         let a = 'a'+i;
         let name = a;
         let email = a+'@gmail.com';
@@ -82,14 +81,19 @@ const createUser =  async (req, res, next)=>{
             email:email,
             auth:true
         });
+        users.push(user);
         user.save().then(() =>{
             console.log('create success');
         } );
-
-        let r = Math.floor(Math.random()*stores.length)
-        let store = stores[r];
-        let storeEmail = stores[r].email;
-        let myNum = r;
+    }
+    for(let i=0;i<100;i++){
+        let r1 = Math.floor(Math.random()*users.length)
+        let user = users[r1];
+        let email = user.email;
+        let r2 = Math.floor(Math.random()*stores.length)
+        let store = stores[r2];
+        let storeEmail = stores[r2].email;
+        let myNum = 0;
         let userqueue = new UserQueue({
             myNum : myNum,
             store : store
@@ -105,7 +109,7 @@ const createUser =  async (req, res, next)=>{
                         console.log(error)
                     }else{
                         let date = '2019/7/30'
-                        let hour = Math.floor(Math.random()*11+8)
+                        let hour = Math.floor(Math.random()*9+9)
                         let min = Math.floor(Math.random()*60)
                         let sec = Math.floor(Math.random()*60)
                         let time = date+' '+hour+':'+min+':'+sec
@@ -123,6 +127,7 @@ const createUser =  async (req, res, next)=>{
             
         });
     }
+    
     res.json({status:200, msg:'user and store added queue data'});
     // let password = req.body.password;
     // let birthday = req.body.birthday;

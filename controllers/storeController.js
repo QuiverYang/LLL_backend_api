@@ -130,10 +130,17 @@ const addPost = async (req,res) =>{
                         res.json({status:404,msg:'404 server error'});
                         return;
                     }else{
+                        Exhibition.updateOne({name:store.currentExhibit},{$push:{allPosts:post}},function(err){
+                            if(err){
+                                console.log('update exhibition '+store.currentExhibit+' error');
+                                return;
+                            }
+                        });
                         res.json({status:200,msg:'update successful'});
                         console.log('addPost');
                     }
-                })
+                });
+                
             }
         }
     })
@@ -232,7 +239,7 @@ const dumpStoreExhibit = async (req,res)=>{
                 
                 let history = await History.create({
                     // date: TPEtime,
-                    date: new Date("2019-07-30"),
+                    date: new Date("2019-07-03"),
                     historyVisitorTime:historyVisitorTime,
                     historyPost:historyPost,
                     historyQueue:historyQueue
@@ -335,9 +342,9 @@ const getQueueInfo = async (req,res)=>{
             for(let j = 0; j < stores[i].history.length; j++){
                 let obj ={};
                 if(date.getDate()===stores[i].history[j].date.getDate()){
-                    console.log(stores[i].name);
-                    console.log('j: '+ j);
-                    console.log(stores[i].history[j]);
+                    // console.log(stores[i].name);
+                    // console.log('j: '+ j);
+                    // console.log(stores[i].history[j]);
                     let total = stores[i].history[j].historyQueue.total;
                     let currentNum = stores[i].history[j].historyQueue.current;
                     let vt = [];
@@ -370,7 +377,7 @@ const getQueueInfo = async (req,res)=>{
 }
 const clearHistory = (req,res)=>{
 
-    Store.updateMany({currentExhibit:'期末專題展'},{$set:{history:[]}},function(err){
+    Store.updateMany({currentExhibit:'電玩展'},{$set:{history:[]}},function(err){
         if(err){
             console.log(err);
             res.json({err:err});
