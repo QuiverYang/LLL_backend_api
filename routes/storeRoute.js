@@ -20,6 +20,9 @@ router.get('/getAllStores',storeController.getAllStores);
 //leadline/store/dumpStoreExhibit 備份店家資料並清空post visitorTime queue 並新增pastPost pastVisitorTime pastQueue 
 router.put('/dumpStoreExhibit',storeController.dumpStoreExhibit);
 
+//leadline/store/dumpOneStoreExhibit 備份一家店家資料並清空post visitorTime queue 並新增pastPost pastVisitorTime pastQueue 
+router.put('/dumpOneStoreExhibit',storeController.dumpOneStoreExhibit);
+
 //leadline/store/searchStores 搜尋店家
 router.post('/searchStores',storeController.searchStores);
 
@@ -35,5 +38,6 @@ router.get('/getQueueInfo',storeController.getQueueInfo);
 
 //leadline/store/addPost
 router.put('/addPost',storeController.addPost);
+
 
 module.exports = router;

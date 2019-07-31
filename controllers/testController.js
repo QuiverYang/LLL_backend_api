@@ -10,7 +10,9 @@ const OldExhibit = require('../models/old_exhibition');
 const mongoose = require('mongoose');
 
 const a = (req,res)=>{
-    res.send(new Date());
+    let ISODate = new Date();
+    let temp = ISODate.setHours(ISODate.getHours()+20);
+    res.json({time:ISODate});
 }
 const b =(req,res)=>{
     let name = req.body.name;
@@ -66,7 +68,7 @@ const createUser =  async (req, res, next)=>{
     }
     let stores = await Store.findByCurrentExhibition(exhibitionName);
     
-    for(let i=0;i<3;i++){
+    for(let i=0;i<100;i++){
         let a = 'a'+i;
         let name = a;
         let email = a+'@gmail.com';
@@ -99,7 +101,7 @@ const createUser =  async (req, res, next)=>{
                         console.log(error)
                     }else{
                         let date = '2019/7/30'
-                        let hour = Math.floor(Math.random()*9+9)
+                        let hour = Math.floor(Math.random()*11+8)
                         let min = Math.floor(Math.random()*60)
                         let sec = Math.floor(Math.random()*60)
                         let time = date+' '+hour+':'+min+':'+sec

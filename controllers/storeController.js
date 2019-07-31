@@ -171,6 +171,48 @@ const getPassword = async (req,res)=>{
     }
 }
 
+const dumpOneStoreExhibit = async (req,res)=>{
+    let email = req.body.email;
+    let currentEx = req.body.exhibitionName;
+    Store.findOne({email:email},async function(err, stores){
+        if(err){
+            console.log('dumpOneStoreExhibit error');
+            console.log(err);
+            res.send('dumpOneStoreExhibit error')
+            return
+        }else if(stores){
+                let historyVisitorTime = stores.visitorTime;
+                let historyQueue = stores.queue;
+                let historyPost = stores.post;
+                let TPEtime = new Date();
+                TPEtime.setHours(TPEtime.getHours()+8);
+                let history = await History.create({
+                    date: TPEtime,
+                    historyVisitorTime:[historyVisitorTime],
+                    historyPost:historyPost,
+                    historyQueue:historyQueue
+                })
+                stores.history.push(history);
+                let queue = await Queue.create({
+                    exhibitionName:currentEx,
+                    storeName : stores.name,
+                    current : 0,
+                    total: 0,
+                    visitor: []
+                })
+                stores.queue = queue;
+                stores.visitorTime = [];
+                stores.post=[];
+                stores.save();
+            console.log('dumpOneStoreExhibit');
+            res.send('dump stores visitorTime, queue and post');
+        }else{
+            console.log('dumpOneStoreExhibit');
+            res.send('invalid exhibitionName');
+        }
+    })
+}
+
 const dumpStoreExhibit = async (req,res)=>{
     let currentEx = req.body.exhibitionName;
     Store.findOne({currentExhibit:currentEx},async function(err, stores){
@@ -180,8 +222,7 @@ const dumpStoreExhibit = async (req,res)=>{
             res.send('dumpStoreExhibit error')
             return
         }else if(stores){
-            console.log(stores);
-            // for(let i = 0; i < stores.length; i++){
+            for(let i = 0; i < stores.length; i++){
                 
                 let historyVisitorTime = stores[i].visitorTime;
                 let historyQueue = stores[i].queue;
@@ -192,10 +233,17 @@ const dumpStoreExhibit = async (req,res)=>{
                     historyPost:historyPost,
                     historyQueue:historyQueue
                 })
+                let queue = await Queue.create({
+                    exhibitionName:currentEx,
+                    storeName : stores.name,
+                    current : 0,
+                    total: 0,
+                    visitor: []
+                })
+                stores[i] = queue;
                 stores[i].history.push(history);
                 stores[i].save();
-            // }
-            console.log(stores);
+            }
             console.log('dumpStoreExhibit');
             res.send('dump stores visitorTime, queue and post');
         }else{
@@ -270,10 +318,12 @@ module.exports = {
     updateStore,
     getAllStores,
     getPassword,
+    dumpOneStoreExhibit,
     dumpStoreExhibit,
     searchStores,
     remove,
     getStoreSchema,
     getQueueInfo,
     addPost,
+    
 }
