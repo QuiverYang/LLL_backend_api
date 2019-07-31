@@ -113,7 +113,7 @@ const boothLogin = async(req, res, next) => {
     }
     //確認是否密碼正確
     for(let i = 0; i < booth.length; i++)  {
-        if(booth[i].password === req.body.password)  {  
+        if(booth[i].password == req.body.password)  {  
             //若密碼正確，確認是否api為有效期間(有效期間為策展者自己輸入，通常為開展日期前兩天 ~ 關展日期)。
             let exhibition = await Exhibition.find().byName(booth[i].currentExhibit);  
             if(new Date().getTime() < exhibition[0].start.getTime())  {

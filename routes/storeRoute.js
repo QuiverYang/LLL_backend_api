@@ -47,7 +47,4 @@ router.post('/changeEmail', storeController.changeEmail);
 //leadline/store/changePassword 在登入狀態下更換密碼
 router.post('/changePassword', storeController.changePassword);
 
-//leadline/store/sendFeedback 傳送Feedback到我們的信箱
-router.post('/sendFeedback', storeController.sendFeedback);
-
 module.exports = router;

@@ -11,4 +11,16 @@ msgsaveSchema = new Schema({
     time: String
 });
 
-module.exports = mongoose.model('Msgsave', messageSchema);
+msgsaveSchema.query.byId = function(msgsaveId)  {
+    return this.where({_id: msgsaveId});
+};
+
+msgsaveSchema.query.byName = function(name)  {
+    return this.where({name: name});
+};
+
+msgsaveSchema.query.byNames = function(exhibition, name)  {
+    return this.where({exhibition: exhibition, name: name});
+};
+
+module.exports = mongoose.model('Msgsave', msgsaveSchema);

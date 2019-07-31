@@ -6,6 +6,8 @@ const emailController = require('../controllers/emailController');
 const StoreSchema = require('mongoose').model('Store').schema;
 const Exhibition = require('../models/exhibition');
 const boothController = require('../controllers/boothController');
+const Msgsave = require('../models/msgsave');
+const Message = require('../models/message');
 
 const create = async(req, res, next) => {
     let name = req.body.name;
@@ -137,13 +139,13 @@ const getStore = async(req, res, next) => {
     res.json({status: 200, msg: store});
 };
 
-const getAllStores = async(req, res, nex) => {
+const getAllStores = async(req, res, next) => {
     let stores = await Store.findAllStores();
     console.log('getAllStores');
     res.json({status: 200, msg: stores});
 };
 
-const getQueueInfo = async(req, res, nex) => {
+const getQueueInfo = async(req, res, next) => {
     let currentExhibit = req.query.name;
     let stores = await Store.find({currentExhibit:currentExhibit}).populate({
         path: 'queue',
@@ -177,7 +179,7 @@ const getQueueInfo = async(req, res, nex) => {
     res.json({status: 200, msg: infos});  
 };
 
-const getQueueInfo2 = async(req, res, nex) => {
+const getQueueInfo2 = async(req, res, next) => {
     let currentExhibit = req.query.name;
     let stores = await Store.find({currentExhibit:currentExhibit}).populate({
         path: 'queue',
@@ -203,13 +205,13 @@ const getQueueInfo2 = async(req, res, nex) => {
     res.json({status:200,msg:infos});  
 };
 
-const clearStoreExhibit = async(req, res, nex) => {
+const clearStoreExhibit = async(req, res, next) => {
     await Store.updateMany({}, {$set: {currentExhibit: ''}});
     console.log('clear stores exhibition info');
     res.send('clear stores exhibition info');
 };
 
-const remove = async(req, res, nex) => {
+const remove = async(req, res, next) => {
     let email = req.body.email;
     Store.deleteOne({email: email}, function(err, result){
         if(err)  {
@@ -222,7 +224,7 @@ const remove = async(req, res, nex) => {
 };
 
 //0728：第一次下載app的時候，以及登出的時候，更新資料
-const initialBoothDataByServer = async(req, res, nex) => {
+const initialBoothDataByServer = async(req, res, next) => {
     let boothId = req.decoded.boothId;
     let booth = await Store.findOne().byBoothId(boothId);
     if(!booth)  {
@@ -240,7 +242,7 @@ const initialBoothDataByServer = async(req, res, nex) => {
 };
 
 //0728：更新攤位描述
-const updateBoothInfo = async(req, res, nex) => {
+const updateBoothInfo = async(req, res, next) => {
     let boothId = req.decoded.boothId;
     let info = req.body.info;
     if(info.trim().length == 0)  {
