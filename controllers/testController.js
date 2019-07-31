@@ -6,13 +6,13 @@ const Exhibit = require('../models/exhibition');
 const User = require('../models/user'); 
 const UserQueue = require('../models/userqueue');
 const Queue = require('../models/queue');
-const OldExhibit = require('../models/old_exhibition');
-const mongoose = require('mongoose');
 
 const a = (req,res)=>{
-    let ISODate = new Date();
-    let temp = ISODate.setHours(ISODate.getHours()+20);
-    res.json({time:ISODate});
+    queue.enqueue('test1');
+    queue.enqueue('test2');
+    console.log(queue.size());
+    let bb = queue.size();
+    res.send(bb+'');
 }
 const b =(req,res)=>{
     let name = req.body.name;
@@ -21,20 +21,9 @@ const b =(req,res)=>{
     return;
 }
 const c =(req,res)=>{
-    Exhibit.find(function(err, docs) {
-            docs.forEach(async function(doc){
-                // doc._id = mongoose.Types.ObjectId();
-                // doc.isNew = true; //<--------------------IMPORTANT
-                // await doc.save();
-                var newdoc = new OldExhibit(doc);
-                newdoc._id = mongoose.Types.ObjectId();
-                newdoc.isNew = true;
-                console.log(newdoc);
-                await newdoc.save();
-            })
-            res.send('clone done')
-        }
-    );
+    let name = req.body.name
+    console.log(name);
+    res.send(name);
 }
 const d = (req,res)=>{
     //找到每間攤位展期時間是否超過
@@ -67,8 +56,9 @@ const createUser =  async (req, res, next)=>{
         return;
     }
     let stores = await Store.findByCurrentExhibition(exhibitionName);
+    let users = [];
     
-    for(let i=0;i<100;i++){
+    for(let i=0;i<3;i++){
         let a = 'a'+i;
         let name = a;
         let email = a+'@gmail.com';
@@ -78,14 +68,19 @@ const createUser =  async (req, res, next)=>{
             email:email,
             auth:true
         });
+        users.push(user);
         user.save().then(() =>{
             console.log('create success');
         } );
-
-        let r = Math.floor(Math.random()*stores.length)
-        let store = stores[r];
-        let storeEmail = stores[r].email;
-        let myNum = r;
+    }
+    for(let i=0;i<10;i++){
+        let r1 = Math.floor(Math.random()*users.length)
+        let user = users[r1];
+        let email = user.email;
+        let r2 = Math.floor(Math.random()*stores.length)
+        let store = stores[r2];
+        let storeEmail = stores[r2].email;
+        let myNum = 0;
         let userqueue = new UserQueue({
             myNum : myNum,
             store : store
@@ -101,7 +96,7 @@ const createUser =  async (req, res, next)=>{
                         console.log(error)
                     }else{
                         let date = '2019/7/30'
-                        let hour = Math.floor(Math.random()*11+8)
+                        let hour = Math.floor(Math.random()*9+9)
                         let min = Math.floor(Math.random()*60)
                         let sec = Math.floor(Math.random()*60)
                         let time = date+' '+hour+':'+min+':'+sec
@@ -119,6 +114,7 @@ const createUser =  async (req, res, next)=>{
             
         });
     }
+    
     res.json({status:200, msg:'user and store added queue data'});
     // let password = req.body.password;
     // let birthday = req.body.birthday;

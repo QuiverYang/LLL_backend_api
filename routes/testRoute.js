@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const testController = require('../controllers/testController');
 
-router.get('/a',testController.a);
+router.post('/a',testController.a);
 router.post('/b',testController.b);
 router.post('/c',testController.c);
 router.post('/d',testController.d);
