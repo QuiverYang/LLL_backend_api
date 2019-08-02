@@ -95,7 +95,7 @@ const addVisitor = async(req,res)=>{
                 if(error){
                     console.log(error)
                 }else{
-                    Store.updateOne({email:storeEmail},{$push:{visitorTime:new Date}},function(error){
+                    Store.updateOne({email:storeEmail},{$push:{visitorTime:new Date().addHours(8)}},function(error){
                         if(error){
                             console.log(error);
                         }else{

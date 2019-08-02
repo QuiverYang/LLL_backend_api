@@ -12,14 +12,40 @@ const History = require('../models/history');
 
 
 const a = (req,res)=>{
-    let date = new Date(req.query.date);
-    let today = new Date();
-    let same = date.getDate()===today.getDate();
-    res.json({time:same});
+    let date = new Date(req.query.date).addHours(-16);
+    // let today = new Date();
+    // let same = date.getDate()===today.getDate();
+    res.json({time:new Date()});
 }
 const b =(req,res)=>{
-    console.log(req.body.date);
-    res.json({date:req.body.date})
+    Queue.findById({_id:"5d413bb6af4a48199ceaa9ef"},function(err,que){
+        if(err){
+            console.log(err)
+            res.send(err)
+            return;
+        }else{
+            console.log('before:')
+            console.log(que)
+        }
+    })
+    // Queue.updateOne({_id:"5d413bb6af4a48199ceaa9ef"},{$pop:{visitor:1}},function(err){
+    //     if(err){
+    //         console.log(err)
+    //         return
+    //     }else{
+    //         res.send('updated')
+    //     }
+    // })
+    // Queue.findById({_id:"5d413bb6af4a48199ceaa9ef"},function(err,que){
+    //     if(err){
+    //         console.log(err)
+    //         res.send(err)
+    //         return;
+    //     }else{
+    //         console.log(que)
+    //         res.json({queue:que})
+    //     }
+    // })
 }
 const c =(req,res)=>{
     Exhibit.find(function(err, docs) {
@@ -71,8 +97,8 @@ const createUser =  async (req, res, next)=>{
     let stores = await Store.findByCurrentExhibition(exhibitionName);
     let users = [];
     
-    for(let i=0;i<3;i++){
-        let a = 'a'+i;
+    for(let i=0;i<1;i++){
+        let a = 'b'+i;
         let name = a;
         let email = a+'@gmail.com';
         
@@ -92,6 +118,7 @@ const createUser =  async (req, res, next)=>{
         let email = user.email;
         let r2 = Math.floor(Math.random()*stores.length)
         let store = stores[r2];
+        // let store = stores[1];
         let storeEmail = stores[r2].email;
         let myNum = 0;
         let userqueue = new UserQueue({
@@ -108,8 +135,9 @@ const createUser =  async (req, res, next)=>{
                     if(error){
                         console.log(error)
                     }else{
-                        let date = '2019/7/30'
-                        let hour = Math.floor(Math.random()*9+9)
+                        let date = '2019/8/2'
+                        let hour = Math.floor(Math.random()*10+8)
+                        // let hour = 9
                         let min = Math.floor(Math.random()*60)
                         let sec = Math.floor(Math.random()*60)
                         let time = date+' '+hour+':'+min+':'+sec
@@ -117,7 +145,7 @@ const createUser =  async (req, res, next)=>{
                             if(error){
                                 console.log(error);
                             }else{
-                                console.log('user and store added queue data');
+                                // console.log('user and store added queue data');
                             }
                         });
                         
@@ -127,8 +155,8 @@ const createUser =  async (req, res, next)=>{
             
         });
     }
-    
-    res.json({status:200, msg:'user and store added queue data'});
+    console.log('users and stores added queue data');
+    res.json({status:200, msg:'users and stores added queue data'});
     // let password = req.body.password;
     // let birthday = req.body.birthday;
     // let phone = req.body.phone;

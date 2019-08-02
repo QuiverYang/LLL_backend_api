@@ -222,6 +222,14 @@ const dumpOneStoreExhibit = async (req,res)=>{
 
 const dumpStoreExhibit = async (req,res)=>{
     let currentEx = req.body.exhibitionName;
+    let date = req.body.date;
+    if(date === undefined){
+        // let TPEtime = new Date();
+        // TPEtime.setHours(TPEtime.getHours()+8);
+        date = new Date().addHours(-16); // 減一天
+    }else{
+        date = new Date(date).addHours(8);
+    }
     Store.find({currentExhibit:currentEx},async function(err, stores){
         if(err){
             console.log('dumpStoreExhibit error');
@@ -229,8 +237,8 @@ const dumpStoreExhibit = async (req,res)=>{
             res.send('dumpStoreExhibit error')
             return
         }else if(stores){
-            let TPEtime = new Date();
-            TPEtime.setHours(TPEtime.getHours()+8);
+
+            
             for(let i = 0; i < stores.length; i++){
                 
                 let historyVisitorTime = stores[i].visitorTime;
@@ -238,8 +246,7 @@ const dumpStoreExhibit = async (req,res)=>{
                 let historyPost = stores[i].post;
                 
                 let history = await History.create({
-                    // date: TPEtime,
-                    date: new Date("2019-07-03"),
+                    date: date,
                     historyVisitorTime:historyVisitorTime,
                     historyPost:historyPost,
                     historyQueue:historyQueue
@@ -293,7 +300,9 @@ const getQueueInfo = async (req,res)=>{
     let date = new Date(req.query.date);
     let currentExhibit = req.query.name;
     let today = new Date();
-    let sameDate = date.getDate()===today.getDate();
+    let sameDate = date.toDateString()===today.toDateString();
+    // console.log('date today:')
+    // console.log(date, today);
     console.log('same: '+sameDate);
     let stores = await Store.find({currentExhibit:currentExhibit})
     .populate({
@@ -342,7 +351,7 @@ const getQueueInfo = async (req,res)=>{
             for(let j = 0; j < stores[i].history.length; j++){
                 let obj ={};
                 if(date.getDate()===stores[i].history[j].date.getDate()){
-                    // console.log(stores[i].name);
+                    console.log(stores[i].name);
                     // console.log('j: '+ j);
                     // console.log(stores[i].history[j]);
                     let total = stores[i].history[j].historyQueue.total;
@@ -376,8 +385,8 @@ const getQueueInfo = async (req,res)=>{
     // res.json({status:200,msg:stores});  
 }
 const clearHistory = (req,res)=>{
-
-    Store.updateMany({currentExhibit:'電玩展'},{$set:{history:[]}},function(err){
+    let name = req.body.exhibitionName;
+    Store.updateMany({currentExhibit:name},{$set:{history:[]}},function(err){
         if(err){
             console.log(err);
             res.json({err:err});
@@ -387,6 +396,15 @@ const clearHistory = (req,res)=>{
     console.log('clearHistory');
     res.json('clearHistory')
 
+    // Store.updateMany({currentExhibit:'電玩展'},{$pop:{history:1}},function(err){
+    //     if(err){
+    //         console.log(err);
+    //         res.json({err:err});
+    //         return;
+    //     }
+    // });
+    // console.log('clearHistory');
+    // res.json('clearHistory')
 }
 
 
