@@ -351,7 +351,7 @@ const getQueueInfo = async (req,res)=>{
             for(let j = 0; j < stores[i].history.length; j++){
                 let obj ={};
                 if(date.getDate()===stores[i].history[j].date.getDate()){
-                    console.log(stores[i].name);
+                    // console.log(stores[i].name);
                     // console.log('j: '+ j);
                     // console.log(stores[i].history[j]);
                     let total = stores[i].history[j].historyQueue.total;
