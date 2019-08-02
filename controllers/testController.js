@@ -48,20 +48,9 @@ const b =(req,res)=>{
     // })
 }
 const c =(req,res)=>{
-    Exhibit.find(function(err, docs) {
-            docs.forEach(async function(doc){
-                // doc._id = mongoose.Types.ObjectId();
-                // doc.isNew = true; //<--------------------IMPORTANT
-                // await doc.save();
-                var newdoc = new OldExhibit(doc);
-                newdoc._id = mongoose.Types.ObjectId();
-                newdoc.isNew = true;
-                console.log(newdoc);
-                await newdoc.save();
-            })
-            res.send('clone done')
-        }
-    );
+    let name = req.body.name
+    console.log(name);
+    res.send(name);
 }
 const d = (req,res)=>{
     //找到每間攤位展期時間是否超過

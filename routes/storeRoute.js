@@ -17,11 +17,8 @@ router.post('/getStore',storeController.getStore);
 //leadline/store/getAllStores 拿到所有店家資訊
 router.get('/getAllStores',storeController.getAllStores);
 
-//leadline/store/dumpStoreExhibit 備份店家資料並清空post visitorTime queue 並新增pastPost pastVisitorTime pastQueue 
-router.put('/dumpStoreExhibit',storeController.dumpStoreExhibit);
-
-//leadline/store/dumpOneStoreExhibit 備份一家店家資料並清空post visitorTime queue 並新增pastPost pastVisitorTime pastQueue 
-router.put('/dumpOneStoreExhibit',storeController.dumpOneStoreExhibit);
+//leadline/store/clearStoreExhibit 清空店家目前展期資料
+router.put('/clearStoreExhibit',storeController.clearStoreExhibit);
 
 //leadline/store/searchStores 搜尋店家
 router.post('/searchStores',storeController.searchStores);

@@ -14,5 +14,4 @@ exhibitionSchema = new Schema({
 
 });
 
-module.exports = mongoose.model('Exhibition',exhibitionSchema,);
-
+module.exports = mongoose.model('Exhibition',exhibitionSchema);

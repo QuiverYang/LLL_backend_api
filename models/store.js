@@ -15,7 +15,6 @@ storeSchema = new Schema({
     visitorTime:[Date],
     queue: {type: Schema.Types.ObjectId, ref: 'Queue'},
     post:[{type:Schema.Types.ObjectId, ref:'Message', default:null}],
-    history:[{type:Schema.Types.ObjectId, ref:'History', default:null}],
     
 })
 
