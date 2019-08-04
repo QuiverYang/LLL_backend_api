@@ -30,5 +30,14 @@ userSchema.query.updateAuth = function(email){
     return this.updateOne({email:email},{auth: true});
 }
 
+//0801，利用userId找客戶
+userSchema.query.byId = function(userId)  {
+    return this.where({_id: userId});
+};
+
+//0801，利用userId找客戶
+userSchema.query.byData = function(name, email, phone, gender)  {
+    return this.where({name: name, email: email, phone: phone, gender: gender});
+};
 
 module.exports = mongoose.model('User',userSchema);

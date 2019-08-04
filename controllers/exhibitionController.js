@@ -65,7 +65,6 @@ const addStores =async (req,res)=>{
 
 const remove = (req,res)=>{
     let name = req.body.name;
-    
     Exhibit.deleteOne({name:name},function(err,result){
         if(err){
             console.log(err);

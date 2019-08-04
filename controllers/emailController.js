@@ -52,12 +52,8 @@ const send = (req,res,next) =>{
     var options = {
         from: 'ccc72077@gmail.com',
         to:email,
-        subject: '這是 node.js 發送的測試信件',
+        subject: '這是 LeadLongLine 發送的驗證信件',
         html: '<h2>請點擊連結啟動帳號</h2> <p><a href="http://34.80.102.113:3000/leadline/auth/checkAuth?token='+token+'" title="LeadLongLine">點擊這裡</a> 之後請回app重新登入</p>',
-        attachments: [ {
-            filename: '',
-            path: ''
-        }]
     }
     
     transporter.sendMail(options,function(error,info){
@@ -107,9 +103,77 @@ const sendPassword = async(req,res,next) =>{
         }
     })
 }
+const sendSystemEmail = (req, res, next, to, subject, text, html) => {
+    let transporter = nodemailer.createTransport({
+        service: 'Gmail',
+        auth: {
+            user: 'LeadLongLineBooth@gmail.com',
+            pass: 'qpalzm794613'
+        }
+    });
+    let options = {
+        from: 'Lead Long Line展覽端',
+        to: to,
+        subject: subject,
+        text: text,
+        html: html,
+        //如果要發送附件，再加以下
+        // attachments: [{
+        //     filename: '',
+        //     path: ''
+        // }]
+    }
+    transporter.sendMail(options, (error, info) => {
+        if(error)  {
+            console.log('發送信件錯誤：' + error);
+            res.json({status: 400, serverMsg: '400, bad Request,, send forget psw verify email failure.', clientMsg: '連線異常，請重新嘗試'});
+            return; 
+        }
+        if(!info)  {
+            console.log('發送信件錯誤，找不到info');
+            res.json({status: 400, serverMsg: '400, bad Request,, send forget psw verify email failure.', clientMsg: '連線異常，請重新嘗試'});
+            return;
+        }
+        console.log('發送信件成功' + info.response);
+        res.json({status: 200, serverMsg: '200, ok, send forget psw verify email success.', clientMsg: '驗證碼已發送至' + to});
+    });
+};
+
+const sendFeedbackEmail = (req, res, next, to, subject, text, booth) => {
+    let transporter = nodemailer.createTransport({
+        service: 'Gmail',
+        auth: {
+            user: 'LeadLongLineBooth@gmail.com',
+            pass: 'qpalzm794613'
+        }
+    });
+    let options = {
+        from: booth.email,
+        to: to,
+        subject: subject,
+        text: text,
+    }
+    transporter.sendMail(options, (error, info) => {
+        if(error)  {
+            console.log('發送信件錯誤：' + error);
+            res.json({status: 400, serverMsg: '400, bad Request,, send feedback email failure.', clientMsg: '連線異常，請重新嘗試'});
+            return; 
+        }
+        if(!info)  {
+            console.log('發送信件錯誤，找不到info');
+            res.json({status: 400, serverMsg: '400, bad Request,, send feedback email failure.', clientMsg: '連線異常，請重新嘗試'});
+            return;
+        }
+        console.log('發送信件成功' + info.response);
+        res.json({status: 200, booth: booth, serverMsg: '200, ok, send feedback email success.', clientMsg: '提交成功'});
+    });
+};
+
 module.exports = {
     send,
     sendPassword,
     test,
-    send2
+    send2,
+    sendSystemEmail,
+    sendFeedbackEmail
 }

@@ -8,5 +8,6 @@ router.post('/checkTokenForAdmin',authController.checkTokenForAdmin);//leadlin/a
 router.post('/checkToken',authController.checkToken);
 router.get('/checkAuth',authController.checkAuth);
 
+router.post('/boothLogin', authController.boothLogin);
 
 module.exports = router;

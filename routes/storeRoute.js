@@ -42,4 +42,31 @@ router.put('/addPost',storeController.addPost);
 router.put('/clearHistory',storeController.clearHistory);
 
 
+//leadline/store/initialBoothDataByServer 返回展位資料
+router.post('/initialBoothDataByServer', storeController.initialBoothDataByServer);
+
+//leadline/store/initClientArr 第一次下載app的時候，以及登出的時候，更新排隊資料
+router.post('/initClientArr', storeController.initClientArr);
+
+//leadline/store/callClient 叫號
+router.post('/callClient', storeController.callClient);
+
+//leadline/store/scannerAdd 掃描加入排隊
+router.post('/scannerAdd', storeController.scannerAdd);
+
+//leadline/store/handAdd 手動加入排隊
+router.post('/handAdd', storeController.handAdd);
+
+//leadline/store/updateBoothInfo 更新攤位描述
+router.post('/updateBoothInfo', storeController.updateBoothInfo);
+
+//leadline/store/changeEmail 在登入狀態下更換email
+router.post('/changeEmail', storeController.changeEmail);
+
+//leadline/store/changePassword 在登入狀態下更換密碼
+router.post('/changePassword', storeController.changePassword);
+
+//leadline/store/sendFeedback 在登入狀態下sendFeedback
+router.post('/sendFeedback', storeController.sendFeedback);
+
 module.exports = router;

@@ -7,6 +7,8 @@ const StoreSchema = require('mongoose').model('Store').schema;
 const Message = require('../models/message');
 const Exhibition = require('../models/exhibition');
 const History = require('../models/history');
+const boothController = require('./boothController');
+const Userqueue = require('../models/userqueue');
 
 
 const create = async (req, res)=>{
@@ -337,8 +339,9 @@ const getQueueInfo = async (req,res)=>{
                 vt[j-openTime]={時間:j,人數:0};
             }
             for(let j = 0; j < stores[i].visitorTime.length; j++){
-                let key = new Date(stores[i].visitorTime[j]).getHours();
-                // console.log(key)//這裡的key是local hour
+                let key = stores[i].visitorTime[j].addHours(-8).getHours();
+                // console.log('#######j:' + j);
+                // console.log(stores[i].visitorTime[j].addHours(-8).getHours())
                 if(key>=openTime && key<=closeTime){
                     vt[key-openTime]['人數']++;
                 }
@@ -408,6 +411,349 @@ const clearHistory = (req,res)=>{
 }
 
 
+//0728：第一次下載app的時候，以及登出的時候，更新資料
+const initialBoothDataByServer = async(req, res, next) => {
+    let boothId = req.decoded.boothId;
+    let booth = await Store.findOne().byBoothId(boothId);
+    if(!booth)  {
+        res.json({status: 404, serverMsg: '404, not found, find booth data failure.', clientMsg: '展覽資料載入失敗，請重新登入'});
+        return;
+    }
+    let exhibition = await Exhibition.findOne().byName(booth.currentExhibit);
+    if(!exhibition)  {
+        res.json({status: 404, serverMsg: '404, not found, find exhibition data failure.', clientMsg: '展覽資料載入失敗，請重新登入'});
+        return;
+    }
+    let date = getFormatDate(new Date(exhibition.start.getTime()), new Date(exhibition.end.getTime()));
+    let time = getFormatTime(new Date(exhibition.start.getTime()),new Date(exhibition.end.getTime()));
+    res.json({status: 200, exhibition: exhibition, booth: booth, date: date, time: time, serverMsg: '200, ok, find booth data success.', clientMsg: '展覽資料載入成功'});
+};
+
+//剛登入初始化clientArr
+const initClientArr = async(req, res, next) => {
+    let booth = await Store.findOne().byId(req.decoded.boothId);
+    if(!booth)  {
+        res.json({status: 404, serverMsg: '404, not found, find booth data failure.', clientMsg: '排隊資料載入失敗，請重新登入'});
+        return;
+    }
+    let queue = await Queue.findOne().byQueue(booth.queue);
+    if(!queue)  {
+        res.json({status: 404, serverMsg: '404, not found, find queue failure.', clientMsg: '排隊資料載入失敗，請重新登入'});
+        return;
+    }
+    let clientArr = [];
+    for(let i = 0; i < queue.visitor.length; i++)  {
+        let user = await User.findOne().byId(queue.visitor[i]);
+        if(!user)  {
+            clientArr.push({id: "noClientId", name: "noClientId", email: "noClientId", phone: "noClientId", gender: "noClientId"});
+        }
+        clientArr.push({id: user._id, name: user.name, email: user.email, 
+            phone: user.phone, gender: user.gender, time: getFormatCallTime(new Date(booth.visitorTime[i].getTime()))});
+    }
+    res.json({status: 200, booth: booth, queue: queue, clientArr: clientArr, serverMsg: '200, ok, find clientArr data success.', clientMsg: '排隊資料載入成功'});
+}
+
+const getFormatCallTime = (date) => {
+    return (date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate()
+    + ' ' + date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds());
+};
+
+const callClient = async(req, res, next) => {
+    let booth = await Store.findOne().byId(req.decoded.boothId);
+    if(!booth)  {
+        console.log('callClient');
+        res.json({status: 404, serverMsg: '404, not found, find booth data failure.', clientMsg: '連線異常，請重新嘗試'});
+        return;
+    }
+    let queue = await Queue.findOne().byQueue(booth.queue);
+    if(!queue)  {
+        res.json({status: 404, booth: booth, serverMsg: '404, not found, find queue failure.', clientMsg: '找不到排隊資料，請重新嘗試'});
+        return;
+    }
+    let callNum = req.body.callNum;
+    if(callNum > queue.total)  {
+        res.json({status: 400, booth: booth, serverMsg: '400, bad request, call client failure.', clientMsg: '叫號順序不可大於當前排隊人數'});
+        return;
+    }
+    Queue.findOneAndUpdate({_id: queue._id}, {$set:{current: callNum}}, {new: true}, function(err, queue)  {
+        if(err || !queue)  {
+            res.json({status: 400, booth: booth, queue: queue, serverMsg: '400, bad request, queue info update failed.', clientMsg: '排隊資料無法更新，請重新嘗試'});
+            return;
+        }
+        res.json({status: 200, booth: booth, queue: queue, serverMsg: '200, ok, call client success.', clientMsg: '叫號成功'});
+    });
+}
+
+//0801：掃描加入排隊客戶
+const scannerAdd = async(req, res, next) => {
+    let booth = await Store.findOne().byId(req.decoded.boothId);
+    if(!booth)  {
+        console.log('scannerAdd');
+        res.json({status: 404, serverMsg: '404, not found, find booth data failure.', clientMsg: '連線異常，請重新嘗試'});
+        return;
+    }
+    let queue = await Queue.findOne().byQueue(booth.queue);
+    if(!queue)  {
+        res.json({status: 404, serverMsg: '404, not found, find queue failure.', clientMsg: '找不到排隊資料，請重新嘗試'});
+        return;
+    }
+    let name = req.body.name;
+    let email = req.body.email;
+    let phone = req.body.phone;
+    let gender = req.body.gender;
+    let time = req.body.time;
+    let userQueue = new Userqueue({
+        myNum: queue.total + 1,
+        store: booth._id
+    });
+    let user = await User.findOne().byData(name, email, phone, gender);
+    if(!user)  {
+        res.json({status: 404, serverMsg: '404, not found, find user failure.', clientMsg: '找不到客戶資訊，無法加入排隊'});
+        return;
+    }
+    userQueue.save().then(() => {
+        User.findOneAndUpdate({_id: user.id}, {$push:{line: userQueue._id}}, {new: true}, function(err, user)  {
+            if(err || !user)  {
+                res.json({status: 400, booth: booth, queue: queue, user: user, userQueue: userQueue, serverMsg: '400, bad request, booth info update failed.', clientMsg: '無法加入排隊資料，請重新嘗試'});
+                return;
+            }
+        })
+    });
+    Queue.findOneAndUpdate({_id: queue._id}, {$push:{visitor: user._id}, $set:{total: queue.visitor.length + 1}}, {new: true}, function(err, queue)  {
+        if(err || !queue)  {
+            res.json({status: 400, serverMsg: '400, bad request, booth info update failed.', clientMsg: '找不到排隊資料，請重新嘗試'});
+            return;
+        }
+    });
+    Store.findOneAndUpdate({_id: booth.id}, {$push:{visitorTime: new Date(time)}}, {new: true}, function(err, boothTime)  {
+        if(err || !boothTime)  {
+            res.json({status: 400, booth: booth, queue: queue, user: user, userQueue: userQueue, serverMsg: '400, bad request, booth info update failed.', clientMsg: '排隊資料無法更新，請重新嘗試'});
+            return;
+        }
+        res.json({status: 200, booth: booth, queue: queue, user: user, userQueue: userQueue, serverMsg: '200, ok, add inline success.', clientMsg: '加入排隊成功'});
+    });
+}
+
+//0801：手動加入排隊客戶
+const handAdd = async(req, res, next) => {
+    let booth = await Store.findOne().byId(req.decoded.boothId);
+    if(!booth)  {
+        console.log('handAdd')
+        res.json({status: 404, serverMsg: '404, not found, find booth data failure.', clientMsg: '連線異常，請重新嘗試'});
+        return;
+    }
+    let queue = await Queue.findOne().byQueue(booth.queue);
+    if(!queue)  {
+        res.json({status: 404, serverMsg: '404, not found, find queue failure.', clientMsg: '找不到排隊資料，請重新嘗試'});
+        return;
+    }
+    //把掃描部分的查找會員改成建立一個假會員
+    let name = req.body.name;
+    let email = req.body.email;
+    let phone = req.body.phone;
+    let gender = '尚未編輯';
+    let time = req.body.time;
+    let userQueue = new Userqueue({
+        myNum: queue.total + 1,
+        store: booth._id
+    });
+    let user = new User({
+        name: name,
+        email: email,
+        phone: phone,
+        gender: gender,
+        auth: true,
+        line: []
+    });
+    //建立一個假的userQueue跟user，裡面是我排的展位跟號碼。
+    userQueue.save().then(user.save().then(() => {
+        User.findOneAndUpdate({_id: user.id}, {$push:{line: userQueue._id}}, {new: true}, function(err, user)  {
+            if(err || !user)  {
+                res.json({status: 400, booth: booth, queue: queue, user: user, userQueue: userQueue, serverMsg: '400, bad request, booth info update failed.', clientMsg: '無法加入排隊資料，請重新嘗試'});
+                return;
+            }
+        })
+    }));
+    Queue.findOneAndUpdate({_id: queue._id}, {$push:{visitor: user._id}, $set:{total: queue.visitor.length + 1}}, {new: true}, function(err, queue)  {
+        if(err || !queue)  {
+            res.json({status: 400, booth: booth, queue: queue, user: user, userQueue: userQueue, serverMsg: '400, bad request, booth info update failed.', clientMsg: '排隊資料無法更新，請重新嘗試'});
+            return;
+        }
+    });
+    Store.findOneAndUpdate({_id: booth.id}, {$push:{visitorTime: new Date(time)}}, {new: true}, function(err, boothTIme)  {
+        if(err || !boothTIme)  {
+            res.json({status: 400, booth: booth, queue: queue, user: user, userQueue: userQueue, serverMsg: '400, bad request, booth info update failed.', clientMsg: '排隊資料無法更新，請重新嘗試'});
+            return;
+        }
+        res.json({status: 200, booth: booth, queue: queue, user: user, userQueue: userQueue, serverMsg: '200, ok, add inline success.', clientMsg: '加入排隊成功'});
+    });
+}
+
+//0728：更新攤位描述
+const updateBoothInfo = async(req, res, next) => {
+    let boothId = req.decoded.boothId;
+    let info = req.body.info;
+    if(info.trim().length == 0)  {
+        info = "尚未編輯";
+    }
+    let booth = await Store.findOne().byBoothId(boothId);
+    if(!booth)  {
+        res.json({status: 404, serverMsg: '404, not found, find booth by _id failure.', clientMsg: '攤位描述更新失敗'});
+        return;
+    }
+    Store.findOneAndUpdate({_id: boothId}, {$set:{info: info}}, {new: true}, function(err, booth)  {
+        if(err || !booth)  {
+            res.json({status: 400, serverMsg: '400, bad request, booth info update failed.', clientMsg: '攤位描述更新失敗'});
+            return;
+        }
+        res.json({status: 200, booth: booth, serverMsg: '200, ok, booth info update success.', clientMsg: '攤位描述更新成功'});
+    });
+}
+
+//0729：取得Format好的日期
+const getFormatDate = (dateStart, dateEnd) => {
+    // return dateStart.getFullYear() + '/' + (dateStart.getMonth() + 1) + '/' + dateStart.getDate() + getFormatDay(dayStart.getDay())
+    //         + ' - ' + dateEnd.getFullYear() + '/' + (dateEnd.getMonth() + 1) + '/' + dateEnd.getDate() + getFormatDay(dayEnd.getDay());
+    return (dateStart.getFullYear() + '/' + (dateStart.getMonth() + 1) + '/' + dateStart.getDate()
+    + ' - ' + dateEnd.getFullYear() + '/' + (dateEnd.getMonth() + 1) + '/' + dateEnd.getDate());
+};
+
+//0729：取得Format好的天
+const getFormatDay = (date) => {
+    if(date == 0)  {
+        return '(日)';
+    }else if(date == 1)  {
+        return '(一)';
+    }else if(date == 2)  {
+        return '(二)';
+    }else if(date == 3)  {
+        return '(三)';
+    }else if(date == 4)  {
+        return '(四)';
+    }else if(date == 5)  {
+        return '(五)';
+    }else if(date == 6)  {
+        return '(六)';
+    }
+}
+
+//0729：取得Format好的時間
+const getFormatTime = (dateStart, dateEnd) => {
+    let dateStartFormat, dateEndForma
+}
+
+
+//0729：在登入狀態下更換email
+const changeEmail = async(req, res, next) => {
+    let boothId = req.decoded.boothId;
+    let email = req.body.newMail;
+    let password = req.body.confirmPsw;
+    if(email.trim().length == 0 && password.trim().length == 0)  {
+        res.json({status: 400, serverMsg: '400, bad request, lack new email and check password.', clientMsg: '請輸入新信箱與原密碼'});
+        return;
+    }
+    if(email.trim().length == 0 && password.trim().length != 0)  {
+        res.json({status: 400, serverMsg: '400, bad request, lack new email.', clientMsg: '請輸入新信箱'});
+        return;
+    }
+    if(email.trim().length != 0 && password.trim().length == 0)  {
+        res.json({status: 400, serverMsg: '400, bad request, lack check password.', clientMsg: '請輸入原密碼'});
+        return;
+    }
+    let booth = await Store.findOne().byIdPsw(boothId, password);
+    if(!booth)  {
+        res.json({status: 400, serverMsg: '400, bad request, wrong check password.', clientMsg: '密碼錯誤'});
+        return;
+    }
+    Store.findOneAndUpdate({_id: boothId}, {$set:{email: email}}, {new: true}, function(err, booth)  {
+        if(err || !booth)  {
+            console.log('changeEmail');
+            res.json({status: 404, serverMsg: '404, not found, find booth by _id failed.', clientMsg: '連線異常，請重新嘗試'});
+            return;
+        }
+        console.log(booth);
+        res.json({status: 200, booth: booth, email: email, serverMsg: '200, ok, change email success.', clientMsg: '信箱更換成功'});
+     });
+};
+
+//0729：在登入狀態下更換密碼
+const changePassword = async(req, res, next) => {
+    let boothId = req.decoded.boothId;
+    let oldPsw = req.body.oldPsw;
+    let newPsw = req.body.newPsw;
+    let password = req.body.checkPsw;
+    let booth = await Store.findOne().byIdPsw(boothId, oldPsw);
+    if(!booth)  {
+        res.json({status: 400, serverMsg: '400, bad request, wrong old password.', clientMsg: '原密碼錯誤'});
+        return;
+    }
+    if(newPsw.trim() != password.trim())  {
+        res.json({status: 400, serverMsg: '400, bad request, password not same.', clientMsg: '新密碼不相符'});
+        return;
+    }
+    if(password.trim().length < 6) {
+        res.json({status: 400, serverMsg: '400, bad request, password digits can not less than 6.', clientMsg: '新密碼不得少於6位數'});
+        return;
+    }
+    if(password.trim().length > 20) {
+        res.json({status: 400, serverMsg: '400, bad request, password digits can not more than 20.', clientMsg: '新密碼不得大於20位數'});
+        return;
+    }
+    if(boothController.checkPswFormatValid(password.trim())) {
+        res.json({status: 400, serverMsg: '400, bad request, password contains invalid symbol.', clientMsg: '新密碼僅可由英文與數字組成'});
+        return;
+    }
+    if(boothController.checkIfPswContainEnglishAndNum(password.trim())) {
+        res.json({status: 400, serverMsg: '400, bad request, password contains english and num.', clientMsg: '新密碼需同時包含英文與數字'});
+        return;
+    }
+    Store.findOneAndUpdate({_id: boothId}, {$set:{password: password}}, {new: true}, function(err, booth)  {
+        if(err || !booth)  {
+            console.log('changePassword')
+            res.json({status: 404, serverMsg: '404, not found, find booth by _id failed.', clientMsg: '連線異常，請重新嘗試'});
+            return;
+        }
+        console.log(booth);
+        res.json({status: 200, booth: booth, password: password, serverMsg: '200, ok, change password success.', clientMsg: '密碼重設成功'});
+    });
+};
+//0729：傳送Feedback到我們的信箱
+const sendFeedback = async(req, res, next) => {
+    let boothId = req.decoded.boothId;
+    let type1 = req.body.type1;
+    let type2 = req.body.type2;
+    let type3 = req.body.type3;
+    let type4 = req.body.type4;
+    let feedBackContent = req.body.feedBackContent;
+    let typeArr = [];
+    if(type1.trim().length != 0)  {
+        typeArr.push(type1);  
+    }
+    if(type2.trim().length != 0)  {
+        typeArr.push(type2);  
+    }
+    if(type3.trim().length != 0)  {
+        typeArr.push(type3);  
+    }
+    if(type4.trim().length != 0)  {
+        typeArr.push(type4);  
+    }
+    let booth = await Store.findOne().byId(boothId);
+    if(!booth)  {
+        console.log('sendFeedback');
+        res.json({status: 404, serverMsg: '404, not found, find booth by _id failure.', clientMsg: '連線異常，請重新嘗試'});
+        return;
+    }
+    let allType = '';
+    for(let i = 0; i < typeArr.length; i++)  {
+        allType += (i + 1) + '.' + typeArr[i] + '  ';
+    }
+    let to = booth.email;
+    let subject = 'Lead Long Line展覽端用戶意見反饋';
+    let text = '意見類型：' + allType + '\n\n' + '意見回饋內容：' + feedBackContent + '\n\n' + '發送意見回饋信之展位資料：' + booth;
+    emailController.sendFeedbackEmail(req, res, next, to, subject, text, booth);
+}
+
 module.exports = {
     create,
     getStore,
@@ -422,5 +768,14 @@ module.exports = {
     getQueueInfo,
     addPost,
     clearHistory,
+    initialBoothDataByServer,
+    initClientArr,
+    callClient,
+    scannerAdd,
+    handAdd,
+    updateBoothInfo,
+    changeEmail,
+    changePassword,
+    sendFeedback
     
 }

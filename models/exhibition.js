@@ -13,6 +13,9 @@ exhibitionSchema = new Schema({
     allStores:[{type:Schema.Types.ObjectId, ref: 'Store',default:[]}],
 
 });
-
+//0723，用展覽名稱查找
+exhibitionSchema.query.byName = function(name)  {
+    return this.where({name: name});
+};
 module.exports = mongoose.model('Exhibition',exhibitionSchema,);
 

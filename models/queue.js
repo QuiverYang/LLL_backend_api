@@ -20,4 +20,9 @@ queueSchema.methods.updateVisitor = function() {
     return this.model('Queue').updateOne({storeName:this.storeName},{$set:{}});
 }
 
+//0801，利用booth的queue找queue
+queueSchema.query.byQueue = function(queue)  {
+    return this.where({_id: queue});
+};
+
 module.exports = mongoose.model('Queue',queueSchema);

@@ -59,8 +59,6 @@ const setStoresExihibit= async (req,res)=>{
     res.send('currentExhibit of stores has been changed to ' + currentExhibit);
 }
 
-
-
 const addVisitor = async(req,res)=>{
     const userEmail = req.body.userEmail;
     const storeEmail = req.body.storeEmail;

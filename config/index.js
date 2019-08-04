@@ -3,6 +3,7 @@ const config = {
     mongodb : "mongodb+srv://quiver:quiver@quiver-ncvva.mongodb.net/api_practice?retryWrites=true&w=majority",
     jwtSalt:"QUIVER",
     urlRoot:'http://34.80.102.113/',
+    urlRootCharlotte31228:'http://35.194.199.99/'
 }
 // module.exports = {
 //     config
