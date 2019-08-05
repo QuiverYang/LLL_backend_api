@@ -1,5 +1,4 @@
 const QueueWay = require('../utils/queueWay');
-const queue = new QueueWay();
 const Store = require('../models/store');
 var StoreSchema = require('mongoose').model('Store').schema;
 const Exhibit = require('../models/exhibition');
@@ -12,40 +11,25 @@ const History = require('../models/history');
 
 
 const a = (req,res)=>{
-    let date = new Date(req.query.date).addHours(-16);
-    // let today = new Date();
+    let date = new Date(req.query.date).addHours(8);//這樣拿到的date是local的00:00
+    let today = new Date().addHours(8);//這樣拿到的是當天local的當下時間
     // let same = date.getDate()===today.getDate();
-    res.json({time:new Date()});
+    res.json({time:date, today: today});
 }
-const b =(req,res)=>{
-    Queue.findById({_id:"5d413bb6af4a48199ceaa9ef"},function(err,que){
+const b = async (req,res)=>{
+    let currentEx = req.body.exhibitionName;
+    let date = new Date(req.body.date).addHours(-16);
+    var endDate = null;
+    await Exhibit.findOne({name:currentEx},function(err, ex){
         if(err){
-            console.log(err)
-            res.send(err)
+            console.log('dumpStoreExhibit error');
             return;
-        }else{
-            console.log('before:')
-            console.log(que)
+        }else if(ex){
+            endDate = ex.end;
         }
     })
-    // Queue.updateOne({_id:"5d413bb6af4a48199ceaa9ef"},{$pop:{visitor:1}},function(err){
-    //     if(err){
-    //         console.log(err)
-    //         return
-    //     }else{
-    //         res.send('updated')
-    //     }
-    // })
-    // Queue.findById({_id:"5d413bb6af4a48199ceaa9ef"},function(err,que){
-    //     if(err){
-    //         console.log(err)
-    //         res.send(err)
-    //         return;
-    //     }else{
-    //         console.log(que)
-    //         res.json({queue:que})
-    //     }
-    // })
+    console.log(date>=endDate);
+    res.json({date:date,endDate:endDate});
 }
 const c =(req,res)=>{
     Exhibit.find(function(err, docs) {

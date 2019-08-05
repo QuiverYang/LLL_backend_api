@@ -145,7 +145,7 @@ const checkBoothToken = (req, res, next) => {
     let token = req.headers['x-access-token'];
     if(token == undefined || token == null)  {
         console.log('checkBoothToken token is null or undefinded');
-        res.json({status: 400, serverMsg: '400, bad Request, cannot get token.', clientMsg: '連線異常，請重新嘗試'});
+        res.json({status: 400, serverMsg: '400, bad Request, cannot get token.', clientMsg: '連線異常，請重新嘗試', msg:'token is null from checkBooth token'});
         
         return; 
     }

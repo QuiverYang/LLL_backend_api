@@ -19,14 +19,13 @@ router.use('/admin',adminRouter);//leadline/admin
 router.use('/test',testRouter);//leadline/test
 router.use('/auth',authRouter);//leadline/auth
 router.use('/email',emailRouter);//leadline/email
-
+router.use('/exhibition',exhibitionRouter)//leadlin/exhibition
 
 router.use('/booth',boothRoute);//leadline/booth，0723：展位端不需要通過token認證的api
 router.use(authController.checkBoothToken);  //0723：展位端每次登入的token認證
 
 router.use('/store',storeRouter);//leadline/store
 router.use('/uploads',uploadRouter);//leadline/uploads
-router.use('/exhibition',exhibitionRouter)//leadlin/exhibition
 
 
 router.use('/uploads',uploadRouter);//leadline/uploads

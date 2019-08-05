@@ -225,6 +225,15 @@ const dumpOneStoreExhibit = async (req,res)=>{
 const dumpStoreExhibit = async (req,res)=>{
     let currentEx = req.body.exhibitionName;
     let date = req.body.date;
+    var endDate = null;
+    await Exhibition.findOne({name:currentEx},function(err, ex){
+        if(err){
+            console.log('dumpStoreExhibit error');
+            return;
+        }else if(ex){
+            endDate = ex.end;
+        }
+    })
     if(date === undefined){
         // let TPEtime = new Date();
         // TPEtime.setHours(TPEtime.getHours()+8);
@@ -240,13 +249,11 @@ const dumpStoreExhibit = async (req,res)=>{
             return
         }else if(stores){
 
-            
             for(let i = 0; i < stores.length; i++){
                 
                 let historyVisitorTime = stores[i].visitorTime;
                 let historyQueue = stores[i].queue;
                 let historyPost = stores[i].post;
-                
                 let history = await History.create({
                     date: date,
                     historyVisitorTime:historyVisitorTime,
@@ -266,8 +273,9 @@ const dumpStoreExhibit = async (req,res)=>{
                 })
                 stores[i].queue = queue;
                 stores[i].visitorTime = [];
-                stores[i].post=[];
-                
+                if(date>=endDate){
+                    stores[i].post=[];
+                }
                 stores[i].save();
             }
             console.log('dumpStoreExhibit');
