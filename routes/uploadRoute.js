@@ -19,15 +19,20 @@ const storage = multer.diskStorage(
         // cb(null,file.originalname);
         // let storeId = req.decoded;
         let email = req.query.email;
+        console.log(email);
         Store.findOne({email:email},function(err, store){
             if(err){
                 console.log(err);
                 return;
-            } else{
-                console.log(store)
+            } else if(store){
                 let imgURL = config.urlRoot+'/uploads/'+store._id+'.jpg';
-                Store.updateOne({email:email},{imgURL:imgURL})
+                console.log(imgURL)
+                store.imgURL = imgURL;
+                store.save();
+                // Store.updateOne({email:email},{$set:{imgURL:imgURL}})
                 cb(null,store._id+'.jpg');
+            }else{
+                console.log('invalid email for uploads pics')
             }
         })
         

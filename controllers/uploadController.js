@@ -3,12 +3,24 @@ const Store = require('../models/store');
 
 const uploadStorePic = (req,res,next)=>{
     //這裡postman只能使用formdata 上傳檔案
+    let email = req.query.email;
     if(!req.file){
         res.json({status:400, msg:'Bad request'});
     }else{
         // let fileArr = req.file.originalname.split('.');
-        let filePath = config.urlRoot + req.file.originalname;
-        res.json({status:200, msg:{filePath:filePath}});
+        let imgURL = '';
+        Store.findOne({email:email},function(err, store){
+            if(err){
+                console.log(err);
+                return;
+            }else if(store){
+                imgURL = config.urlRoot+'/uploads/'+store._id+'.jpg';
+            }else{
+                console.log('invalid email for uploads pics')
+            }
+            res.json({status:200, msg:{filePath:imgURL}});
+        })
+        // let filePath = config.urlRoot + req.file.originalname;
     }
 }
 const uploadBoothAvatar = async (req, res, next) => {

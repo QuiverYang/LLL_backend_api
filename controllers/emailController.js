@@ -78,14 +78,14 @@ const sendPassword = async(req,res,next) =>{
         service:'Gmail',
         auth:{
             user:'ccc72077@gmail.com',
-            pass:'720770350240'
+            pass:'ss72077!'
         }
     });
     
     var options = {
         from: 'ccc72077@gmail.com',
         to:'s72077@hotmail.com',
-        subject: '這是 node.js 發送的測試信件',
+        subject: '這是 Lead Long Line 發送的信',
         html: '<h2>帳號:'+email+'</h2><h3>-------------------------------------------------</h3><p>密碼: '+user.password+' </p>',
         attachments: [ {
             filename: '',
