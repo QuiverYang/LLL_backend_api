@@ -17,19 +17,8 @@ const a = (req,res)=>{
     res.json({time:date, today: today});
 }
 const b = async (req,res)=>{
-    let currentEx = req.body.exhibitionName;
-    let date = new Date(req.body.date).addHours(-16);
-    var endDate = null;
-    await Exhibit.findOne({name:currentEx},function(err, ex){
-        if(err){
-            console.log('dumpStoreExhibit error');
-            return;
-        }else if(ex){
-            endDate = ex.end;
-        }
-    })
-    console.log(date>=endDate);
-    res.json({date:date,endDate:endDate});
+    await User.clearUserLine();
+    res.send('clear user line');
 }
 const c =(req,res)=>{
     Exhibit.find(function(err, docs) {
@@ -120,7 +109,7 @@ const createUser =  async (req, res, next)=>{
                         console.log(error)
                     }else{
                         let date = '2019/8/2'
-                        let hour = Math.floor(Math.random()*10+8)
+                        let hour = Math.floor(Math.random()*10)
                         // let hour = 9
                         let min = Math.floor(Math.random()*60)
                         let sec = Math.floor(Math.random()*60)

@@ -183,6 +183,7 @@ const getPassword = async (req,res)=>{
 const dumpOneStoreExhibit = async (req,res)=>{
     let email = req.body.email;
     let currentEx = req.body.exhibitionName;
+    let date = req.body.date;
     Store.findOne({email:email},async function(err, stores){
         if(err){
             console.log('dumpOneStoreExhibit error');
@@ -193,11 +194,12 @@ const dumpOneStoreExhibit = async (req,res)=>{
                 let historyVisitorTime = stores.visitorTime;
                 let historyQueue = stores.queue;
                 let historyPost = stores.post;
-                let TPEtime = new Date();
+                // let TPEtime = new Date();
+                let TPEtime = new Date(date).addHours(8);
                 TPEtime.setHours(TPEtime.getHours()+8);
                 let history = await History.create({
                     date: TPEtime,
-                    historyVisitorTime:[historyVisitorTime],
+                    historyVisitorTime:historyVisitorTime,
                     historyPost:historyPost,
                     historyQueue:historyQueue
                 })
@@ -273,11 +275,15 @@ const dumpStoreExhibit = async (req,res)=>{
                 })
                 stores[i].queue = queue;
                 stores[i].visitorTime = [];
+                stores[i].clientState = [];
+                stores[i].callTime = [];
                 if(date>=endDate){
                     stores[i].post=[];
                 }
+
                 stores[i].save();
             }
+            await User.clearUserLine();
             console.log('dumpStoreExhibit');
             res.send('dump stores visitorTime, queue and post');
         }else{
@@ -306,13 +312,10 @@ const getStoreSchema = (req,res)=>{
 }
 
 const getQueueInfo = async (req,res)=>{
-    //req.query.date格式要是2019-01-01
     let date = new Date(req.query.date);
     let currentExhibit = req.query.name;
     let today = new Date();
     let sameDate = date.toDateString()===today.toDateString();
-    // console.log('date today:')
-    // console.log(date, today);
     console.log('same: '+sameDate);
     let stores = await Store.find({currentExhibit:currentExhibit})
     .populate({
@@ -336,6 +339,7 @@ const getQueueInfo = async (req,res)=>{
         for(let i = 0; i < stores.length; i++){
             let obj = {}
             let total = stores[i].queue.total;
+            // console.log(i+" total"+total +" name: "+ stores[i].name)
             let currentNum = stores[i].queue.current;
             let vt =[];
             obj.name = stores[i].name;
@@ -343,17 +347,24 @@ const getQueueInfo = async (req,res)=>{
             obj.boothNo = stores[i].boothNo;
             obj.inlineNum = total-currentNum;
             obj.totalQueueNum = total;
+            //初始化timeAndVisitor格式
             for(let j = openTime; j <=closeTime; j++){
                 vt[j-openTime]={時間:j,人數:0};
             }
             for(let j = 0; j < stores[i].visitorTime.length; j++){
-                let key = stores[i].visitorTime[j].addHours(-8).getHours();
-                // console.log('#######j:' + j);
-                // console.log(stores[i].visitorTime[j].addHours(-8).getHours())
+                let key = stores[i].visitorTime[j].getHours();
                 if(key>=openTime && key<=closeTime){
                     vt[key-openTime]['人數']++;
                 }
             }
+            let maxVisitTime = 0, temp = 0;
+            vt.forEach(function(item){
+                if(item['人數']>temp){
+                    temp =item['人數'];
+                    maxVisitTime = item['時間'];
+                }
+            })
+            obj.maxVisitTime = maxVisitTime;
             obj.timeAndVisitor = vt;
             infos.push(obj);
         }
@@ -382,15 +393,25 @@ const getQueueInfo = async (req,res)=>{
                         if(key>=openTime && key<=closeTime){
                             vt[key-openTime]['人數']++;
                         }
+                        if(stores[i].name == '大富翁天團'){
+                            console.log(new Date(stores[i].history[j].historyVisitorTime[k]))
+                        }
                     }
                     obj.timeAndVisitor = vt;
+                    let maxVisitTime = 0, temp = 0;
+                    vt.forEach(function(item){
+                        if(item['人數']>temp){
+                            temp =item['人數'];
+                            maxVisitTime = item['時間'];
+                        }
+                    })
+                    obj.maxVisitTime = maxVisitTime;
                     infos.push(obj);
                     break;
                 }
             }
         }
     }
-    
     console.log('getQueueInfo')
     res.json({status:200,msg:infos});  
     // res.json({status:200,msg:stores});  
@@ -419,7 +440,7 @@ const clearHistory = (req,res)=>{
 }
 
 
-//0728：第一次下載app的時候，以及登出的時候，更新資料
+//0806：第一次下載app的時候，以及登出的時候，更新資料
 const initialBoothDataByServer = async(req, res, next) => {
     let boothId = req.decoded.boothId;
     let booth = await Store.findOne().byBoothId(boothId);
@@ -432,12 +453,18 @@ const initialBoothDataByServer = async(req, res, next) => {
         res.json({status: 404, serverMsg: '404, not found, find exhibition data failure.', clientMsg: '展覽資料載入失敗，請重新登入'});
         return;
     }
+    let queue = await Queue.findOne().byQueue(booth.queue);
+    if(!queue)  {
+        res.json({status: 404, booth: booth, serverMsg: '404, not found, find queue failure.', clientMsg: '展覽資料載入失敗，請重新登入'});
+        return;
+    }
     let date = getFormatDate(new Date(exhibition.start.getTime()), new Date(exhibition.end.getTime()));
     let time = getFormatTime(new Date(exhibition.start.getTime()),new Date(exhibition.end.getTime()));
-    res.json({status: 200, exhibition: exhibition, booth: booth, date: date, time: time, serverMsg: '200, ok, find booth data success.', clientMsg: '展覽資料載入成功'});
+    res.json({status: 200, exhibition: exhibition, booth: booth, queue: queue, date: date, time: time, serverMsg: '200, ok, find booth data success.', clientMsg: '展覽資料載入成功'});
 };
 
-//剛登入初始化clientArr
+
+//0806剛登入初始化clientArr
 const initClientArr = async(req, res, next) => {
     let booth = await Store.findOne().byId(req.decoded.boothId);
     if(!booth)  {
@@ -452,24 +479,27 @@ const initClientArr = async(req, res, next) => {
     let clientArr = [];
     for(let i = 0; i < queue.visitor.length; i++)  {
         let user = await User.findOne().byId(queue.visitor[i]);
+        let state = booth.clientState[i];
         if(!user)  {
-            clientArr.push({id: "noClientId", name: "noClientId", email: "noClientId", phone: "noClientId", gender: "noClientId"});
+            clientArr.push({id: "已刪除", name: "已刪除", email: "已刪除", phone: "已刪除", gender: "已刪除", state: 2, time: "已刪除"});
         }
         clientArr.push({id: user._id, name: user.name, email: user.email, 
-            phone: user.phone, gender: user.gender, time: getFormatCallTime(new Date(booth.visitorTime[i].getTime()))});
+            phone: user.phone, gender: user.gender, state: state
+            , time: getFormatCallTime(new Date(booth.visitorTime[i].getTime())), callTime: getFormatCallTime(new Date(booth.callTime[i].getTime()))});
     }
     res.json({status: 200, booth: booth, queue: queue, clientArr: clientArr, serverMsg: '200, ok, find clientArr data success.', clientMsg: '排隊資料載入成功'});
 }
 
-const getFormatCallTime = (date) => {
-    return (date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate()
-    + ' ' + date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds());
-};
 
+// const getFormatCallTime = (date) => {
+//     return (date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate()
+//     + ' ' + date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds());
+// };
+
+//0806
 const callClient = async(req, res, next) => {
     let booth = await Store.findOne().byId(req.decoded.boothId);
     if(!booth)  {
-        console.log('callClient');
         res.json({status: 404, serverMsg: '404, not found, find booth data failure.', clientMsg: '連線異常，請重新嘗試'});
         return;
     }
@@ -479,6 +509,7 @@ const callClient = async(req, res, next) => {
         return;
     }
     let callNum = req.body.callNum;
+    let callTime = req.body.callTime;
     if(callNum > queue.total)  {
         res.json({status: 400, booth: booth, serverMsg: '400, bad request, call client failure.', clientMsg: '叫號順序不可大於當前排隊人數'});
         return;
@@ -488,15 +519,21 @@ const callClient = async(req, res, next) => {
             res.json({status: 400, booth: booth, queue: queue, serverMsg: '400, bad request, queue info update failed.', clientMsg: '排隊資料無法更新，請重新嘗試'});
             return;
         }
+        //res.json({status: 200, booth: booth, queue: queue, serverMsg: '200, ok, call client success.', clientMsg: '叫號成功'});
+    });
+    Store.findOneAndUpdate({_id: booth.id}, {$set:{["callTime." + (req.body.callNum - 1)]: new Date(callTime)}}, {new: true}, function(err, boothTime)  {
+        if(err || !boothTime)  {
+            res.json({status: 400, booth: booth, queue: queue,  serverMsg: '400, bad request, booth info update failed.', clientMsg: '叫號時間無法更新，請重新嘗試'});
+            return;
+        }
         res.json({status: 200, booth: booth, queue: queue, serverMsg: '200, ok, call client success.', clientMsg: '叫號成功'});
     });
 }
 
-//0801：掃描加入排隊客戶
+//0806：掃描加入排隊客戶
 const scannerAdd = async(req, res, next) => {
     let booth = await Store.findOne().byId(req.decoded.boothId);
     if(!booth)  {
-        console.log('scannerAdd');
         res.json({status: 404, serverMsg: '404, not found, find booth data failure.', clientMsg: '連線異常，請重新嘗試'});
         return;
     }
@@ -510,6 +547,7 @@ const scannerAdd = async(req, res, next) => {
     let phone = req.body.phone;
     let gender = req.body.gender;
     let time = req.body.time;
+    let state = req.body.state;
     let userQueue = new Userqueue({
         myNum: queue.total + 1,
         store: booth._id
@@ -533,7 +571,7 @@ const scannerAdd = async(req, res, next) => {
             return;
         }
     });
-    Store.findOneAndUpdate({_id: booth.id}, {$push:{visitorTime: new Date(time)}}, {new: true}, function(err, boothTime)  {
+    Store.findOneAndUpdate({_id: booth.id}, {$push:{visitorTime: new Date(time), clientState: state, callTime: new Date('1970-1-1 00:00:00')}}, {new: true}, function(err, boothTime)  {
         if(err || !boothTime)  {
             res.json({status: 400, booth: booth, queue: queue, user: user, userQueue: userQueue, serverMsg: '400, bad request, booth info update failed.', clientMsg: '排隊資料無法更新，請重新嘗試'});
             return;
@@ -542,11 +580,10 @@ const scannerAdd = async(req, res, next) => {
     });
 }
 
-//0801：手動加入排隊客戶
+//0808：手動加入排隊客戶
 const handAdd = async(req, res, next) => {
     let booth = await Store.findOne().byId(req.decoded.boothId);
     if(!booth)  {
-        console.log('handAdd')
         res.json({status: 404, serverMsg: '404, not found, find booth data failure.', clientMsg: '連線異常，請重新嘗試'});
         return;
     }
@@ -559,8 +596,9 @@ const handAdd = async(req, res, next) => {
     let name = req.body.name;
     let email = req.body.email;
     let phone = req.body.phone;
-    let gender = '尚未編輯';
+    let gender = '訪客';
     let time = req.body.time;
+    let state = req.body.state;
     let userQueue = new Userqueue({
         myNum: queue.total + 1,
         store: booth._id
@@ -588,7 +626,7 @@ const handAdd = async(req, res, next) => {
             return;
         }
     });
-    Store.findOneAndUpdate({_id: booth.id}, {$push:{visitorTime: new Date(time)}}, {new: true}, function(err, boothTIme)  {
+    Store.findOneAndUpdate({_id: booth.id}, {$push:{visitorTime: new Date(time), clientState: state, callTime: new Date('1970-1-1 00:00:00')}}, {new: true}, function(err, boothTIme)  {
         if(err || !boothTIme)  {
             res.json({status: 400, booth: booth, queue: queue, user: user, userQueue: userQueue, serverMsg: '400, bad request, booth info update failed.', clientMsg: '排隊資料無法更新，請重新嘗試'});
             return;
@@ -596,6 +634,7 @@ const handAdd = async(req, res, next) => {
         res.json({status: 200, booth: booth, queue: queue, user: user, userQueue: userQueue, serverMsg: '200, ok, add inline success.', clientMsg: '加入排隊成功'});
     });
 }
+
 
 //0728：更新攤位描述
 const updateBoothInfo = async(req, res, next) => {
@@ -618,6 +657,13 @@ const updateBoothInfo = async(req, res, next) => {
     });
 }
 
+//0806：取得Format好的日期
+const getFormatCallTime = (date) => {
+    // return (date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate()
+    // + ' ' + date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds());
+    return (date.getFullYear() + '-' + getFormatNum(date.getMonth() + 1) + '-' + getFormatNum(date.getDate())
+    + ' ' + getFormatNum(date.getHours()) + ':' + getFormatNum(date.getMinutes()) + ':' + getFormatNum(date.getSeconds()));
+};
 //0729：取得Format好的日期
 const getFormatDate = (dateStart, dateEnd) => {
     // return dateStart.getFullYear() + '/' + (dateStart.getMonth() + 1) + '/' + dateStart.getDate() + getFormatDay(dayStart.getDay())
@@ -625,7 +671,6 @@ const getFormatDate = (dateStart, dateEnd) => {
     return (dateStart.getFullYear() + '/' + (dateStart.getMonth() + 1) + '/' + dateStart.getDate()
     + ' - ' + dateEnd.getFullYear() + '/' + (dateEnd.getMonth() + 1) + '/' + dateEnd.getDate());
 };
-
 //0729：取得Format好的天
 const getFormatDay = (date) => {
     if(date == 0)  {
@@ -725,7 +770,7 @@ const changePassword = async(req, res, next) => {
         res.json({status: 200, booth: booth, password: password, serverMsg: '200, ok, change password success.', clientMsg: '密碼重設成功'});
     });
 };
-//0729：傳送Feedback到我們的信箱
+//0806：傳送Feedback到我們的信箱
 const sendFeedback = async(req, res, next) => {
     let boothId = req.decoded.boothId;
     let type1 = req.body.type1;
@@ -748,7 +793,6 @@ const sendFeedback = async(req, res, next) => {
     }
     let booth = await Store.findOne().byId(boothId);
     if(!booth)  {
-        console.log('sendFeedback');
         res.json({status: 404, serverMsg: '404, not found, find booth by _id failure.', clientMsg: '連線異常，請重新嘗試'});
         return;
     }
@@ -756,11 +800,36 @@ const sendFeedback = async(req, res, next) => {
     for(let i = 0; i < typeArr.length; i++)  {
         allType += (i + 1) + '.' + typeArr[i] + '  ';
     }
-    let to = booth.email;
+    let to = 'leadlonglinebooth@gmail.com';
     let subject = 'Lead Long Line展覽端用戶意見反饋';
     let text = '意見類型：' + allType + '\n\n' + '意見回饋內容：' + feedBackContent + '\n\n' + '發送意見回饋信之展位資料：' + booth;
     emailController.sendFeedbackEmail(req, res, next, to, subject, text, booth);
 }
+
+//0806
+const changeClientState = async(req, res, next) => {
+    let booth = await Store.findOne().byId(req.decoded.boothId);
+    if(!booth)  {
+        res.json({status: 404, serverMsg: '404, not found, find booth data failure.', clientMsg: '連線異常，請重新嘗試'});
+        return;
+    }
+    Store.findOneAndUpdate({_id: booth.id}, {$set:{["clientState." + req.body.index] : req.body.clientState}}, {new: true}, function(err, boothState)  {
+        if(err || !boothState)  {
+            res.json({status: 400, booth: booth, serverMsg: '400, bad request, booth info update failed.', clientMsg: '排隊資料無法更新，請重新嘗試'});
+            return;
+        }
+        res.json({status: 200, booth: booth, serverMsg: '200, ok, add inline success.', clientMsg: '設定成功'});
+    });
+}
+//0806
+const getFormatNum = (num) => {
+    if(num/10 < 1)  {
+        return '0' + num.toString();
+    }else  {
+        return num.toString();
+    }
+}
+
 
 module.exports = {
     create,
@@ -784,6 +853,8 @@ module.exports = {
     updateBoothInfo,
     changeEmail,
     changePassword,
-    sendFeedback
+    sendFeedback,
+    changeClientState,
+    getFormatNum
     
 }

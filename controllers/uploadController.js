@@ -23,6 +23,16 @@ const uploadStorePic = (req,res,next)=>{
         // let filePath = config.urlRoot + req.file.originalname;
     }
 }
+const uploadStorePic2 = (req,res,next)=>{
+    //這裡postman只能使用formdata 上傳檔案
+    if(!req.file){
+        res.json({status:400, msg:'Bad request'});
+    }else{
+        let imgURL = config.urlRoot+'/uploads/'+req.file.originalname;
+        res.json({status:200, msg:{filePath:imgURL}});
+        // let filePath = config.urlRoot + req.file.originalname;
+    }
+}
 const uploadBoothAvatar = async (req, res, next) => {
     let filePath = config.urlRootCharlotte31228 + req.file.originalname;
     if(!req.file){
@@ -40,5 +50,6 @@ const uploadBoothAvatar = async (req, res, next) => {
 
 module.exports = {
     uploadStorePic,
-    uploadBoothAvatar
+    uploadBoothAvatar,
+    uploadStorePic2
 }

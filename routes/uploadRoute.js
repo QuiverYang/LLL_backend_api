@@ -62,7 +62,7 @@ const upload2 = multer({storage:storageDirect})
 const upload = multer({storage:storage});
 //                                    'storePic' -> 在postman使用post的時候要使用formdata 裡面的key值為storePic
 router.post('/storePic',upload.single('storePic'),uploadController.uploadStorePic);//leadline/uploads/storePic
-router.post('/storePic2',upload2.single('storePic'),uploadController.uploadStorePic);//leadline/uploads/storePic2
+router.post('/storePic2',upload2.single('storePic'),uploadController.uploadStorePic2);//leadline/uploads/storePic2
 
 
 router.post('/boothAvatar', uploadBoothAvatar.single('boothAvatar'), uploadController.uploadBoothAvatar);//leadline/uploads/boothAvatar

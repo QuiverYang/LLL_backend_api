@@ -69,4 +69,7 @@ router.post('/changePassword', storeController.changePassword);
 //leadline/store/sendFeedback 在登入狀態下sendFeedback
 router.post('/sendFeedback', storeController.sendFeedback);
 
+router.post('/changeClientState',storeController.changeClientState);
+
+
 module.exports = router;

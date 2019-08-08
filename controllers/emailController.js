@@ -103,7 +103,8 @@ const sendPassword = async(req,res,next) =>{
         }
     })
 }
-const sendSystemEmail = (req, res, next, to, subject, text, html) => {
+//0806
+const sendSystemEmail = (req, res, next, to, subject, text, html, verifyNum, sendVerifyNumTime) => {
     let transporter = nodemailer.createTransport({
         service: 'Gmail',
         auth: {
@@ -135,9 +136,10 @@ const sendSystemEmail = (req, res, next, to, subject, text, html) => {
             return;
         }
         console.log('發送信件成功' + info.response);
-        res.json({status: 200, serverMsg: '200, ok, send forget psw verify email success.', clientMsg: '驗證碼已發送至' + to});
+        res.json({status: 200, verifyNum: verifyNum, sendVerifyNumTime: sendVerifyNumTime, serverMsg: '200, ok, send forget psw verify email success.', clientMsg: '驗證碼已發送至' + to});
     });
 };
+
 
 const sendFeedbackEmail = (req, res, next, to, subject, text, booth) => {
     let transporter = nodemailer.createTransport({

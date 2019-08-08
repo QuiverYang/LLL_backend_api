@@ -12,6 +12,9 @@ userSchema = new Schema({
     auth: {type:Boolean, default:false},
     line: [{type: Schema.Types.ObjectId, ref: 'UserQueue',default:[]}],
 });
+userSchema.statics.clearUserLine = function(){
+    return this.updateMany({},{line:[]});
+}
 
 userSchema.statics.findOneByName = function(name) {
     return this.findOne({name:name});
